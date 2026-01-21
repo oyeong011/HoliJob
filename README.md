@@ -1,21 +1,116 @@
-```txt
-npm install
-npm run dev
+# HoliJob Demo
+
+## 프로젝트 개요
+- **이름**: HoliJob (홀리잡)
+- **목표**: 워킹홀리데이 출국 전에 AI가 자동으로 일자리를 매칭하고 원터치로 지원할 수 있는 데모 앱
+- **핵심 가치**: "도착 전에 일부터 정해드립니다" - 검색이 아닌 결정, 버튼 하나로 지원 완료
+
+## 주요 기능
+
+### ✅ 완료된 기능
+1. **온보딩 플로우** - 3가지 질문만으로 시작 (목적지, 출국일, 근무 시작일)
+2. **AI 매칭 연출** - 2초 로딩 후 자동으로 최적의 일자리 추천
+3. **홈 화면** - AI가 선정한 1순위 일자리 카드 + 원터치 지원 버튼
+4. **일자리 탭** - 자동매칭된 후보 2~3개 표시 + 각각 원터치 지원 가능
+5. **체크리스트 탭** - 출국 전/근무 전 체크리스트 (더미 데이터)
+6. **마이페이지** - 프로필 완성도, 여권 정보, Services Hub (더미 표시)
+7. **지원 완료 화면** - 지원 후 성공 메시지와 다음 단계 안내
+
+### 📱 주요 화면 플로우
+```
+[온보딩] → [AI 매칭 로딩] → [홈(1순위 카드)] → [원터치 지원] → [완료 화면]
+                                    ↓
+                            [일자리/체크리스트/마이페이지 탭]
 ```
 
-```txt
-npm run deploy
+## 데모 URL
+- **샌드박스**: https://3000-ibjb0vfijw83h3yekl9l8-b9b802c4.sandbox.novita.ai
+- **프로덕션**: (배포 후 업데이트 예정)
+
+## 데이터 구조
+
+### 더미 일자리 데이터
+```javascript
+{
+  id: 1,
+  title: 'Barista',
+  city: 'Sydney',
+  wage: '$29.5',
+  startDate: '5월 15일',
+  reason: '숙소 지원 + 즉시 시작 가능',
+  workType: '카페',
+  accommodation: true
+}
 ```
 
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
+### 체크리스트 카테고리
+- **출국 전**: 여권, 비자, 항공권, 여행자 보험
+- **근무 전**: TFN 발급, 은행 계좌, 숙소 확정
 
-```txt
-npm run cf-typegen
+## 사용자 가이드
+
+### 데모 시나리오 (10초 완성)
+1. **시작하기** 버튼 클릭
+2. 3가지 조건 입력 (예: 시드니, 5/10, 5/15)
+3. AI 매칭 대기 (2초)
+4. 홈 화면에서 **원터치 지원** 버튼 클릭
+5. 지원 완료!
+
+### 추가 탐색
+- **일자리 탭**: 다른 후보들도 확인 및 지원 가능
+- **체크리스트**: 준비 상황 확인
+- **마이페이지**: 프로필 및 연결 서비스 상태
+
+## 기술 스택
+- **프레임워크**: Hono (Cloudflare Workers)
+- **프론트엔드**: Vanilla JavaScript + Tailwind CSS
+- **배포**: Cloudflare Pages
+- **상태 관리**: 클라이언트 사이드 JavaScript 객체
+- **스타일링**: Tailwind CSS (CDN)
+
+## 배포 상태
+- **플랫폼**: Cloudflare Pages
+- **현재 상태**: ✅ 샌드박스 테스트 완료
+- **마지막 업데이트**: 2026-01-21
+
+## 개발 가이드
+
+### 로컬 개발
+```bash
+# 빌드
+npm run build
+
+# PM2로 개발 서버 시작
+pm2 start ecosystem.config.cjs
+
+# 테스트
+npm test
+
+# 로그 확인
+pm2 logs holijob-demo --nostream
 ```
 
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
+### 배포
+```bash
+# Cloudflare Pages 배포
+npm run deploy:prod
 ```
+
+## 데모 설계 원칙
+1. **기능 최소화, 메시지 최대화** - 실제 기능보다 '가치 전달'에 집중
+2. **10초 안에 이해 가능** - "도착 전에 일부터 정해주는 앱"
+3. **원터치의 강조** - 버튼 하나로 모든 것이 해결
+4. **미래 확장성 암시** - 비자, 항공, 숙박은 '연결 예정'으로 표시
+
+## 향후 개발 계획
+- [ ] 실제 고용주 데이터베이스 연동
+- [ ] 비자 신청 API 통합
+- [ ] 항공권/숙박 예약 서비스 연결
+- [ ] 사용자 인증 및 프로필 관리
+- [ ] 실제 지원서 제출 기능
+- [ ] 푸시 알림 (지원 결과)
+
+## 데모 성공 기준
+✅ 처음 보는 사람이 10초 안에 말할 수 있어야 함:
+- "아, 이건 도착 전에 일부터 정해주는 앱이구나."
+- "버튼 하나 누르면 바로 지원되네."
