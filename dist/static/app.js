@@ -7,14 +7,24 @@ const AppState = {
   currentTab: 'home',
   new_user: true,
   match_status: 'NONE',
+  onboarding: {
+    step: 1, // 1: 도시, 2: 날짜, 3: 여권, 4: 성향, 5: 직업군, 6: 이력서
+    totalSteps: 6
+  },
   profile: {
     city: '',
     depart_date: null,
     name_en: '',
     nationality: '',
-    passport: { is_verified: false, ocr_dummy: null }
+    passport: { is_verified: false, ocr_dummy: null, number: '', expiry: '' },
+    preferences: {
+      experience: '', // 'first', 'experienced'
+      english_level: '', // 'beginner', 'intermediate', 'advanced'
+      work_style: '' // 'people', 'solo', 'physical'
+    },
+    desired_jobs: [], // ['hospitality', 'farm', 'retail', 'office']
+    resume: { uploaded: false, filename: '' }
   },
-  resume: { source: 'NONE', uploaded: false },
   services: {
     visa_demo_done: false,
     flight_demo_done: false,
@@ -122,41 +132,319 @@ function renderSplash() {
 
 // ============ 온보딩 화면 ============
 function renderOnboarding() {
-  const cities = ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide'];
+  const step = AppState.onboarding.step;
   
-  return `
-    <div class="min-h-screen bg-white px-6 py-8 flex flex-col">
-      <div class="mb-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-3">어디로 가시나요?</h2>
-        <p class="text-base text-gray-600">AI가 지금부터 일자리를 찾아드릴게요</p>
-      </div>
+  // Step 1: 도시 선택
+  if (step === 1) {
+    const cities = ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide'];
+    return `
+      <div class="min-h-screen bg-white px-6 py-8 flex flex-col">
+        <div class="mb-2">
+          <p class="text-sm text-gray-500 mb-8">1/6</p>
+        </div>
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-gray-900 mb-3">어디로<br/>가시나요?</h2>
+          <p class="text-base text-gray-600">AI가 지금부터 일자리를 찾아드릴게요</p>
+        </div>
 
-      <div class="flex-1">
-        <div class="space-y-3">
-          ${cities.map(city => `
+        <div class="flex-1">
+          <div class="space-y-3">
+            ${cities.map(city => `
+              <button 
+                onclick="selectCity('${city}')"
+                class="w-full py-5 rounded-xl font-semibold text-lg transition-all border-2
+                  ${AppState.profile.city === city 
+                    ? 'bg-blue-50 border-blue-600 text-blue-600' 
+                    : 'bg-white border-gray-200 text-gray-900 active:bg-gray-50'}">
+                ${city}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <button 
+          onclick="nextOnboardingStep()"
+          ${!AppState.profile.city ? 'disabled' : ''}
+          class="w-full py-4 rounded-xl font-bold text-lg transition-colors
+            ${AppState.profile.city 
+              ? 'bg-blue-600 text-white active:bg-blue-700' 
+              : 'bg-gray-200 text-gray-400'}">
+          다음
+        </button>
+      </div>
+    `;
+  }
+  
+  // Step 2: 출국일
+  if (step === 2) {
+    return `
+      <div class="min-h-screen bg-white px-6 py-8 flex flex-col">
+        <div class="mb-2">
+          <button onclick="prevOnboardingStep()" class="text-gray-600 text-2xl">←</button>
+          <p class="text-sm text-gray-500 mt-2 mb-8">2/6</p>
+        </div>
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-gray-900 mb-3">언제<br/>출국하시나요?</h2>
+          <p class="text-base text-gray-600">대략적인 날짜를 알려주세요</p>
+        </div>
+
+        <div class="flex-1">
+          <input 
+            type="date" 
+            id="departDate"
+            class="w-full px-5 py-5 border-2 border-gray-200 rounded-xl text-lg focus:border-blue-600 focus:outline-none"
+            value="${AppState.profile.depart_date || ''}"
+            onchange="updateDepartDate(this.value)">
+        </div>
+
+        <button 
+          onclick="nextOnboardingStep()"
+          ${!AppState.profile.depart_date ? 'disabled' : ''}
+          class="w-full py-4 rounded-xl font-bold text-lg transition-colors
+            ${AppState.profile.depart_date 
+              ? 'bg-blue-600 text-white active:bg-blue-700' 
+              : 'bg-gray-200 text-gray-400'}">
+          다음
+        </button>
+      </div>
+    `;
+  }
+  
+  // Step 3: 여권 스캔
+  if (step === 3) {
+    return `
+      <div class="min-h-screen bg-white px-6 py-8 flex flex-col">
+        <div class="mb-2">
+          <button onclick="prevOnboardingStep()" class="text-gray-600 text-2xl">←</button>
+          <p class="text-sm text-gray-500 mt-2 mb-8">3/6</p>
+        </div>
+        <div class="mb-8 text-center">
+          <div class="text-6xl mb-6">📸</div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-3">여권을<br/>스캔해주세요</h2>
+          <p class="text-base text-gray-600">사진면을 스캔하면 자동으로 입력돼요</p>
+        </div>
+
+        <div class="flex-1 flex items-center justify-center">
+          ${AppState.profile.passport.is_verified ? `
+            <div class="text-center">
+              <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-4xl">✓</span>
+              </div>
+              <p class="text-lg font-bold text-gray-900 mb-2">스캔 완료</p>
+              <p class="text-sm text-gray-600">${AppState.profile.name_en || '이름'}</p>
+              <p class="text-sm text-gray-600">${AppState.profile.passport.number || '여권번호'}</p>
+            </div>
+          ` : `
             <button 
-              onclick="selectCity('${city}')"
-              class="w-full py-5 rounded-xl font-semibold text-lg transition-all border-2
-                ${AppState.profile.city === city 
-                  ? 'bg-blue-50 border-blue-600 text-blue-600' 
-                  : 'bg-white border-gray-200 text-gray-900 active:bg-gray-50'}">
-              ${city}
+              onclick="scanPassport()"
+              class="w-full py-6 border-2 border-dashed border-gray-300 rounded-xl text-center active:bg-gray-50">
+              <div class="text-4xl mb-2">📄</div>
+              <p class="text-base font-semibold text-gray-900">여권 스캔하기</p>
             </button>
-          `).join('')}
+          `}
+        </div>
+
+        <button 
+          onclick="nextOnboardingStep()"
+          ${!AppState.profile.passport.is_verified ? 'disabled' : ''}
+          class="w-full py-4 rounded-xl font-bold text-lg transition-colors
+            ${AppState.profile.passport.is_verified 
+              ? 'bg-blue-600 text-white active:bg-blue-700' 
+              : 'bg-gray-200 text-gray-400'}">
+          다음
+        </button>
+      </div>
+    `;
+  }
+  
+  // Step 4: 성향 파악
+  if (step === 4) {
+    return `
+      <div class="min-h-screen bg-white px-6 py-8 flex flex-col">
+        <div class="mb-2">
+          <button onclick="prevOnboardingStep()" class="text-gray-600 text-2xl">←</button>
+          <p class="text-sm text-gray-500 mt-2 mb-8">4/6</p>
+        </div>
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-gray-900 mb-3">당신에 대해<br/>알려주세요</h2>
+          <p class="text-base text-gray-600">AI가 더 잘 맞는 일자리를 찾아드려요</p>
+        </div>
+
+        <div class="flex-1 space-y-6">
+          <!-- 워홀 경험 -->
+          <div>
+            <p class="text-sm font-semibold text-gray-700 mb-3">워홀 경험이 있나요?</p>
+            <div class="space-y-2">
+              <button 
+                onclick="selectPreference('experience', 'first')"
+                class="w-full py-4 rounded-xl font-medium text-base transition-all border-2
+                  ${AppState.profile.preferences.experience === 'first' 
+                    ? 'bg-blue-50 border-blue-600 text-blue-600' 
+                    : 'bg-white border-gray-200 text-gray-900'}">
+                처음이에요
+              </button>
+              <button 
+                onclick="selectPreference('experience', 'experienced')"
+                class="w-full py-4 rounded-xl font-medium text-base transition-all border-2
+                  ${AppState.profile.preferences.experience === 'experienced' 
+                    ? 'bg-blue-50 border-blue-600 text-blue-600' 
+                    : 'bg-white border-gray-200 text-gray-900'}">
+                경험이 있어요
+              </button>
+            </div>
+          </div>
+
+          <!-- 영어 수준 -->
+          <div>
+            <p class="text-sm font-semibold text-gray-700 mb-3">영어 수준은 어떤가요?</p>
+            <div class="space-y-2">
+              <button 
+                onclick="selectPreference('english_level', 'beginner')"
+                class="w-full py-4 rounded-xl font-medium text-base transition-all border-2
+                  ${AppState.profile.preferences.english_level === 'beginner' 
+                    ? 'bg-blue-50 border-blue-600 text-blue-600' 
+                    : 'bg-white border-gray-200 text-gray-900'}">
+                초급 (기본 회화)
+              </button>
+              <button 
+                onclick="selectPreference('english_level', 'intermediate')"
+                class="w-full py-4 rounded-xl font-medium text-base transition-all border-2
+                  ${AppState.profile.preferences.english_level === 'intermediate' 
+                    ? 'bg-blue-50 border-blue-600 text-blue-600' 
+                    : 'bg-white border-gray-200 text-gray-900'}">
+                중급 (업무 가능)
+              </button>
+              <button 
+                onclick="selectPreference('english_level', 'advanced')"
+                class="w-full py-4 rounded-xl font-medium text-base transition-all border-2
+                  ${AppState.profile.preferences.english_level === 'advanced' 
+                    ? 'bg-blue-50 border-blue-600 text-blue-600' 
+                    : 'bg-white border-gray-200 text-gray-900'}">
+                고급 (능숙함)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button 
+          onclick="nextOnboardingStep()"
+          ${!AppState.profile.preferences.experience || !AppState.profile.preferences.english_level ? 'disabled' : ''}
+          class="w-full py-4 rounded-xl font-bold text-lg transition-colors
+            ${AppState.profile.preferences.experience && AppState.profile.preferences.english_level
+              ? 'bg-blue-600 text-white active:bg-blue-700' 
+              : 'bg-gray-200 text-gray-400'}">
+          다음
+        </button>
+      </div>
+    `;
+  }
+  
+  // Step 5: 원하는 직업군
+  if (step === 5) {
+    const jobTypes = [
+      { id: 'hospitality', icon: '☕', label: '호스피탈리티', desc: '카페, 레스토랑' },
+      { id: 'farm', icon: '🌾', label: '농장/목장', desc: '과일 수확, 목축' },
+      { id: 'retail', icon: '🛍️', label: '리테일', desc: '매장, 판매' },
+      { id: 'office', icon: '💼', label: '오피스', desc: '사무, 관리' }
+    ];
+    
+    return `
+      <div class="min-h-screen bg-white px-6 py-8 flex flex-col">
+        <div class="mb-2">
+          <button onclick="prevOnboardingStep()" class="text-gray-600 text-2xl">←</button>
+          <p class="text-sm text-gray-500 mt-2 mb-8">5/6</p>
+        </div>
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-gray-900 mb-3">어떤 일을<br/>하고 싶으세요?</h2>
+          <p class="text-base text-gray-600">여러 개 선택할 수 있어요</p>
+        </div>
+
+        <div class="flex-1">
+          <div class="space-y-3">
+            ${jobTypes.map(job => `
+              <button 
+                onclick="toggleJobType('${job.id}')"
+                class="w-full py-5 px-5 rounded-xl text-left transition-all border-2
+                  ${AppState.profile.desired_jobs.includes(job.id)
+                    ? 'bg-blue-50 border-blue-600' 
+                    : 'bg-white border-gray-200'}">
+                <div class="flex items-center gap-3">
+                  <span class="text-3xl">${job.icon}</span>
+                  <div class="flex-1">
+                    <p class="text-base font-semibold ${AppState.profile.desired_jobs.includes(job.id) ? 'text-blue-600' : 'text-gray-900'}">${job.label}</p>
+                    <p class="text-sm text-gray-600">${job.desc}</p>
+                  </div>
+                  ${AppState.profile.desired_jobs.includes(job.id) ? '<span class="text-blue-600">✓</span>' : ''}
+                </div>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <button 
+          onclick="nextOnboardingStep()"
+          ${AppState.profile.desired_jobs.length === 0 ? 'disabled' : ''}
+          class="w-full py-4 rounded-xl font-bold text-lg transition-colors
+            ${AppState.profile.desired_jobs.length > 0
+              ? 'bg-blue-600 text-white active:bg-blue-700' 
+              : 'bg-gray-200 text-gray-400'}">
+          다음
+        </button>
+      </div>
+    `;
+  }
+  
+  // Step 6: 이력서 업로드 (선택)
+  if (step === 6) {
+    return `
+      <div class="min-h-screen bg-white px-6 py-8 flex flex-col">
+        <div class="mb-2">
+          <button onclick="prevOnboardingStep()" class="text-gray-600 text-2xl">←</button>
+          <p class="text-sm text-gray-500 mt-2 mb-8">6/6</p>
+        </div>
+        <div class="mb-8 text-center">
+          <div class="text-6xl mb-6">📄</div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-3">이력서를<br/>올려주세요</h2>
+          <p class="text-base text-gray-600">선택사항이에요. 나중에 올려도 돼요</p>
+        </div>
+
+        <div class="flex-1 flex items-center justify-center">
+          ${AppState.profile.resume.uploaded ? `
+            <div class="text-center w-full">
+              <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-4xl">✓</span>
+              </div>
+              <p class="text-lg font-bold text-gray-900 mb-2">업로드 완료</p>
+              <p class="text-sm text-gray-600">${AppState.profile.resume.filename}</p>
+            </div>
+          ` : `
+            <button 
+              onclick="uploadResume()"
+              class="w-full py-8 border-2 border-dashed border-gray-300 rounded-xl text-center active:bg-gray-50">
+              <div class="text-4xl mb-3">📎</div>
+              <p class="text-base font-semibold text-gray-900 mb-1">이력서 업로드</p>
+              <p class="text-sm text-gray-600">PDF, DOC, JPG</p>
+            </button>
+          `}
+        </div>
+
+        <div class="space-y-3">
+          <button 
+            onclick="completeOnboarding()"
+            class="w-full py-4 rounded-xl font-bold text-lg bg-blue-600 text-white active:bg-blue-700 transition-colors">
+            완료
+          </button>
+          ${!AppState.profile.resume.uploaded ? `
+            <button 
+              onclick="completeOnboarding()"
+              class="w-full py-4 rounded-xl font-semibold text-base text-gray-600 active:bg-gray-50">
+              건너뛰기
+            </button>
+          ` : ''}
         </div>
       </div>
-
-      <button 
-        onclick="submitOnboarding()"
-        ${!AppState.profile.city ? 'disabled' : ''}
-        class="w-full py-4 rounded-xl font-bold text-lg transition-colors
-          ${AppState.profile.city 
-            ? 'bg-blue-600 text-white active:bg-blue-700' 
-            : 'bg-gray-200 text-gray-400'}">
-        다음
-      </button>
-    </div>
-  `;
+    `;
+  }
 }
 
 // ============ AI 매칭 로딩 (토스 스타일) ============
@@ -664,12 +952,122 @@ function renderToast() {
 // ============ 액션 함수 ============
 function startApp() {
   AppState.currentScreen = 'onboarding';
+  AppState.onboarding.step = 1;
   render();
 }
 
 function selectCity(city) {
   AppState.profile.city = city;
   render();
+}
+
+function updateDepartDate(date) {
+  AppState.profile.depart_date = date;
+  render();
+}
+
+function scanPassport() {
+  // 스캔 시뮬레이션
+  const overlay = document.createElement('div');
+  overlay.className = 'fixed inset-0 bg-white flex items-center justify-center z-50';
+  overlay.innerHTML = `
+    <div class="text-center px-6">
+      <div class="mb-6">
+        <div class="inline-flex items-center justify-center">
+          <div class="flex gap-1.5">
+            <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+            <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+            <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+          </div>
+        </div>
+      </div>
+      <p class="text-lg font-bold text-gray-900">여권을 스캔하는 중이에요</p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    overlay.remove();
+    AppState.profile.passport.is_verified = true;
+    AppState.profile.passport.number = 'M12345678';
+    AppState.profile.passport.expiry = '2030-12-31';
+    AppState.profile.name_en = 'HONG GILDONG';
+    AppState.profile.nationality = 'South Korea';
+    showToast('스캔이 완료됐어요');
+    render();
+  }, 1500);
+}
+
+function selectPreference(type, value) {
+  AppState.profile.preferences[type] = value;
+  render();
+}
+
+function toggleJobType(jobId) {
+  const index = AppState.profile.desired_jobs.indexOf(jobId);
+  if (index > -1) {
+    AppState.profile.desired_jobs.splice(index, 1);
+  } else {
+    AppState.profile.desired_jobs.push(jobId);
+  }
+  render();
+}
+
+function uploadResume() {
+  // 업로드 시뮬레이션
+  const overlay = document.createElement('div');
+  overlay.className = 'fixed inset-0 bg-white flex items-center justify-center z-50';
+  overlay.innerHTML = `
+    <div class="text-center px-6">
+      <div class="mb-6">
+        <div class="inline-flex items-center justify-center">
+          <div class="flex gap-1.5">
+            <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+            <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+            <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+          </div>
+        </div>
+      </div>
+      <p class="text-lg font-bold text-gray-900">업로드 중이에요</p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    overlay.remove();
+    AppState.profile.resume.uploaded = true;
+    AppState.profile.resume.filename = 'resume.pdf';
+    showToast('업로드가 완료됐어요');
+    render();
+  }, 1000);
+}
+
+function nextOnboardingStep() {
+  if (AppState.onboarding.step < AppState.onboarding.totalSteps) {
+    AppState.onboarding.step++;
+    render();
+  }
+}
+
+function prevOnboardingStep() {
+  if (AppState.onboarding.step > 1) {
+    AppState.onboarding.step--;
+    render();
+  }
+}
+
+function completeOnboarding() {
+  AppState.currentScreen = 'matching';
+  AppState.match_status = 'MATCHING';
+  render();
+
+  setTimeout(() => {
+    AppState.matches = DUMMY_MATCHES;
+    AppState.match_status = 'READY';
+    AppState.currentScreen = 'home';
+    AppState.currentTab = 'home';
+    render();
+  }, 2000);
 }
 
 function submitOnboarding() {
