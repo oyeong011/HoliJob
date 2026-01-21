@@ -1,5 +1,5 @@
-// HoliJob v2 - Desktop Web Version
-// "AI가 골라줌 → 버튼 한 번으로 지원 (+ 항공/숙소/비자도 버튼으로)"
+// HoliJob v3 - Mobile First Design
+// "AI가 골라줌 → 버튼 한 번으로 지원"
 
 // ============ 상태 관리 ============
 const AppState = {
@@ -21,9 +21,9 @@ const AppState = {
     stay_demo_done: false
   },
   matches: [],
-  showModal: false,
-  modalType: null,
-  modalData: null,
+  showBottomSheet: false,
+  bottomSheetType: null,
+  bottomSheetData: null,
   toast: null
 };
 
@@ -114,12 +114,11 @@ function render() {
   } else if (AppState.currentScreen === 'matching') {
     root.innerHTML = renderMatching();
   } else {
-    // 메인 레이아웃 (좌측 사이드바 + 메인 콘텐츠)
     root.innerHTML = renderMainLayout();
   }
 
-  if (AppState.showModal) {
-    renderModalOverlay();
+  if (AppState.showBottomSheet) {
+    renderBottomSheet();
   }
 
   if (AppState.toast) {
@@ -130,15 +129,15 @@ function render() {
 // ============ 스플래시 화면 ============
 function renderSplash() {
   return `
-    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-700">
-      <div class="text-center px-8 max-w-2xl">
-        <div class="text-8xl mb-8 animate-bounce">✈️</div>
-        <h1 class="text-6xl font-bold text-white mb-6">HoliJob</h1>
-        <p class="text-2xl text-white/90 mb-4">도착 전에 일부터 정해드립니다</p>
-        <p class="text-lg text-white/80 mb-12">AI가 당신에게 맞는 일자리를 골라드려요<br/>버튼 하나로 지원 완료</p>
+    <div class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-700 px-6">
+      <div class="text-center">
+        <div class="text-7xl mb-6 animate-bounce">✈️</div>
+        <h1 class="text-5xl font-bold text-white mb-4">HoliJob</h1>
+        <p class="text-xl text-white/90 mb-3">도착 전에 일부터 정해드립니다</p>
+        <p class="text-base text-white/70 mb-12 leading-relaxed">AI가 당신에게 맞는 일자리를 골라드려요<br/>버튼 하나로 지원 완료</p>
         <button 
           onclick="startApp()"
-          class="px-12 py-5 bg-white text-blue-900 rounded-2xl font-bold text-xl hover:scale-105 transition-transform shadow-2xl">
+          class="px-10 py-4 bg-white text-blue-900 rounded-full font-bold text-lg shadow-2xl active:scale-95 transition-transform">
           시작하기
         </button>
       </div>
@@ -151,54 +150,52 @@ function renderOnboarding() {
   const cities = ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide'];
   
   return `
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center p-8">
-      <div class="bg-white rounded-3xl shadow-2xl p-12 max-w-3xl w-full">
-        <div class="text-center mb-10">
-          <div class="text-5xl mb-4">🎯</div>
-          <h2 class="text-4xl font-bold text-gray-800 mb-3">일자리부터 골라드릴게요</h2>
-          <p class="text-lg text-gray-600">딱 3가지만 알려주세요 (30초)</p>
+    <div class="min-h-screen bg-gray-50 px-6 py-8 flex flex-col">
+      <div class="text-center mb-8">
+        <div class="text-5xl mb-3">🎯</div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">일자리부터 골라드릴게요</h2>
+        <p class="text-sm text-gray-600">딱 3가지만 알려주세요</p>
+      </div>
+
+      <div class="space-y-6 flex-1">
+        <!-- 도시 선택 -->
+        <div>
+          <label class="block text-base font-semibold text-gray-700 mb-3">어디로 가시나요?</label>
+          <div class="flex flex-wrap gap-2">
+            ${cities.map(city => `
+              <button 
+                onclick="selectCity('${city}')"
+                class="px-6 py-3 rounded-full border-2 text-sm font-medium transition-all active:scale-95
+                  ${AppState.profile.city === city 
+                    ? 'bg-blue-900 text-white border-blue-900' 
+                    : 'bg-white text-gray-700 border-gray-300'}">
+                ${city}
+              </button>
+            `).join('')}
+          </div>
         </div>
 
-        <div class="space-y-8">
-          <!-- 도시 선택 -->
-          <div>
-            <label class="block text-lg font-semibold text-gray-700 mb-4">어디로 가시나요?</label>
-            <div class="flex flex-wrap gap-3">
-              ${cities.map(city => `
-                <button 
-                  onclick="selectCity('${city}')"
-                  class="px-8 py-4 rounded-full border-2 text-lg font-medium transition-all
-                    ${AppState.profile.city === city 
-                      ? 'bg-blue-900 text-white border-blue-900' 
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-600'}">
-                  ${city}
-                </button>
-              `).join('')}
-            </div>
-          </div>
-
-          <!-- 출국일 (선택) -->
-          <div>
-            <label class="block text-lg font-semibold text-gray-700 mb-4">출국일 (선택)</label>
-            <input 
-              type="date" 
-              id="departDate"
-              class="w-full px-6 py-4 border-2 border-gray-300 rounded-xl text-lg focus:border-blue-900 focus:outline-none"
-              value="${AppState.profile.depart_date || ''}">
-          </div>
-
-          <!-- CTA -->
-          <button 
-            onclick="submitOnboarding()"
-            ${!AppState.profile.city ? 'disabled' : ''}
-            class="w-full py-5 rounded-xl font-bold text-xl transition-all shadow-lg
-              ${AppState.profile.city 
-                ? 'bg-gradient-to-r from-blue-900 to-cyan-700 text-white hover:shadow-xl hover:scale-[1.02]' 
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'}">
-            AI 매칭 시작하기
-          </button>
+        <!-- 출국일 (선택) -->
+        <div>
+          <label class="block text-base font-semibold text-gray-700 mb-3">출국일 (선택)</label>
+          <input 
+            type="date" 
+            id="departDate"
+            class="w-full px-4 py-3 border-2 border-gray-300 rounded-2xl text-base focus:border-blue-900 focus:outline-none"
+            value="${AppState.profile.depart_date || ''}">
         </div>
       </div>
+
+      <!-- CTA -->
+      <button 
+        onclick="submitOnboarding()"
+        ${!AppState.profile.city ? 'disabled' : ''}
+        class="w-full py-4 rounded-full font-bold text-lg transition-all active:scale-95
+          ${AppState.profile.city 
+            ? 'bg-gradient-to-r from-blue-900 to-cyan-700 text-white shadow-lg' 
+            : 'bg-gray-300 text-gray-500'}">
+        AI 매칭 시작하기
+      </button>
     </div>
   `;
 }
@@ -206,19 +203,20 @@ function renderOnboarding() {
 // ============ AI 매칭 로딩 ============
 function renderMatching() {
   return `
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center p-8">
-      <div class="text-center max-w-2xl">
-        <div class="relative mb-8">
-          <div class="w-32 h-32 mx-auto">
-            <div class="absolute inset-0 border-8 border-blue-200 rounded-full"></div>
-            <div class="absolute inset-0 border-8 border-blue-900 rounded-full border-t-transparent animate-spin"></div>
-          </div>
+    <div class="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-6">
+      <div class="text-center">
+        <!-- 로딩 스피너 -->
+        <div class="relative w-20 h-20 mx-auto mb-8">
+          <div class="absolute inset-0 border-4 border-blue-200 rounded-full"></div>
+          <div class="absolute inset-0 border-4 border-blue-900 rounded-full border-t-transparent animate-spin"></div>
         </div>
-        <h2 class="text-4xl font-bold text-gray-800 mb-4">AI가 당신 조건에 맞는<br/>일자리를 고르는 중...</h2>
-        <p class="text-xl text-gray-600 mb-8">평균 10초 → 지금은 1초로 단축 🚀</p>
-        <div class="space-y-3 text-lg text-gray-500">
+        
+        <h2 class="text-2xl font-bold text-gray-800 mb-3">AI가 당신 조건에 맞는<br/>일자리를 고르는 중...</h2>
+        <p class="text-base text-gray-600 mb-6">평균 10초</p>
+        
+        <div class="space-y-2 text-sm text-gray-500">
           <p>✓ 비자 조건 확인</p>
-          <p>✓ 출국일 기반 시작 가능 일자리 필터링</p>
+          <p>✓ 출국일 기반 필터링</p>
           <p>✓ 첫 워홀러 맞춤 추천</p>
         </div>
       </div>
@@ -226,90 +224,44 @@ function renderMatching() {
   `;
 }
 
-// ============ 메인 레이아웃 (사이드바 + 콘텐츠) ============
+// ============ 메인 레이아웃 ============
 function renderMainLayout() {
   return `
-    <div class="flex min-h-screen bg-gray-50">
-      <!-- 좌측 사이드바 -->
-      <aside class="w-72 bg-white border-r border-gray-200 flex flex-col">
-        <!-- 로고 -->
-        <div class="p-8 border-b border-gray-200">
-          <div class="flex items-center gap-3">
-            <div class="text-3xl">✈️</div>
-            <div>
-              <h1 class="text-2xl font-bold text-gray-800">HoliJob</h1>
-              <p class="text-sm text-gray-500">AI 일자리 매칭</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- 네비게이션 -->
-        <nav class="flex-1 p-4 space-y-2">
-          ${renderNavItem('home', '🏠', '홈', AppState.currentTab === 'home')}
-          ${renderNavItem('jobs', '💼', '일자리', AppState.currentTab === 'jobs')}
-          ${renderNavItem('checklist', '✅', '체크리스트', AppState.currentTab === 'checklist')}
-          ${renderNavItem('mypage', '👤', '마이페이지', AppState.currentTab === 'mypage')}
-        </nav>
-
-        <!-- 프로필 요약 -->
-        <div class="p-6 border-t border-gray-200">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-12 h-12 bg-gradient-to-br from-blue-900 to-cyan-700 rounded-full flex items-center justify-center text-white font-bold text-lg">
-              ${AppState.profile.name_en ? AppState.profile.name_en.charAt(0).toUpperCase() : '?'}
-            </div>
-            <div class="flex-1">
-              <p class="font-semibold text-gray-800">${AppState.profile.name_en || '게스트'}</p>
-              <p class="text-sm text-gray-500">${AppState.profile.city || '도시 미설정'}</p>
-            </div>
-          </div>
-          ${renderProfileCompletionBar()}
-        </div>
-      </aside>
-
-      <!-- 메인 콘텐츠 영역 -->
-      <main class="flex-1 overflow-y-auto">
-        <div class="max-w-7xl mx-auto p-8">
-          ${renderMainContent()}
-        </div>
+    <div class="flex flex-col min-h-screen bg-gray-50">
+      <!-- 메인 콘텐츠 -->
+      <main class="flex-1 overflow-y-auto pb-20">
+        ${renderMainContent()}
       </main>
+
+      <!-- 하단 탭바 -->
+      ${renderBottomTabBar()}
     </div>
   `;
 }
 
-function renderNavItem(tab, icon, label, active) {
-  return `
-    <button 
-      onclick="switchTab('${tab}')"
-      class="w-full flex items-center gap-4 px-6 py-4 rounded-xl text-left transition-all
-        ${active 
-          ? 'bg-gradient-to-r from-blue-900 to-cyan-700 text-white shadow-lg' 
-          : 'text-gray-700 hover:bg-gray-100'}">
-      <span class="text-2xl">${icon}</span>
-      <span class="font-semibold text-lg">${label}</span>
-    </button>
-  `;
-}
-
-function renderProfileCompletionBar() {
-  const items = [
-    AppState.profile.city,
-    AppState.profile.name_en,
-    AppState.profile.nationality,
-    AppState.profile.passport.is_verified
+// ============ 하단 탭바 ============
+function renderBottomTabBar() {
+  const tabs = [
+    { id: 'home', icon: '🏠', label: '홈' },
+    { id: 'jobs', icon: '💼', label: '일자리' },
+    { id: 'checklist', icon: '✅', label: '체크리스트' },
+    { id: 'mypage', icon: '👤', label: '마이페이지' }
   ];
-  const completed = items.filter(Boolean).length;
-  const percent = Math.round((completed / items.length) * 100);
 
   return `
-    <div>
-      <div class="flex justify-between text-sm mb-2">
-        <span class="text-gray-600">프로필 완성도</span>
-        <span class="font-semibold text-blue-900">${percent}%</span>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-bottom">
+      <div class="flex items-center justify-around px-2 py-2">
+        ${tabs.map(tab => `
+          <button 
+            onclick="switchTab('${tab.id}')"
+            class="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-all active:scale-95
+              ${AppState.currentTab === tab.id ? 'text-blue-900' : 'text-gray-500'}">
+            <span class="text-2xl">${tab.icon}</span>
+            <span class="text-xs font-medium">${tab.label}</span>
+          </button>
+        `).join('')}
       </div>
-      <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div class="h-full bg-gradient-to-r from-blue-900 to-cyan-700 transition-all" style="width: ${percent}%"></div>
-      </div>
-    </div>
+    </nav>
   `;
 }
 
@@ -325,73 +277,64 @@ function renderMainContent() {
 // ============ 홈 화면 ============
 function renderHome() {
   if (AppState.match_status === 'MATCHING') {
-    return `<div class="text-center py-20"><p class="text-2xl text-gray-600">매칭 중...</p></div>`;
+    return `<div class="text-center py-20 px-6"><p class="text-lg text-gray-600">매칭 중...</p></div>`;
   }
 
   if (AppState.match_status === 'NONE') {
-    return `<div class="text-center py-20"><p class="text-2xl text-gray-600">온보딩을 먼저 완료해주세요</p></div>`;
+    return `<div class="text-center py-20 px-6"><p class="text-lg text-gray-600">온보딩을 먼저 완료해주세요</p></div>`;
   }
 
   const topJob = AppState.matches[0];
   const isApplied = topJob && topJob.applied;
 
   return `
-    <div class="space-y-8">
-      <!-- 상태 배너 -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-4xl font-bold text-gray-800 mb-2">
-            ${isApplied ? '지원 완료!' : 'AI가 고른 당신의 일자리'}
-          </h2>
-          <p class="text-xl text-gray-600">
-            ${isApplied 
-              ? '고용주가 확인 중입니다. 보통 1~3일 내 답변이 옵니다.' 
-              : '가장 적합한 일자리를 찾았어요. 지금 바로 지원하세요!'}
-          </p>
-        </div>
-        ${isApplied ? `
-          <div class="px-6 py-3 bg-green-100 text-green-700 rounded-full font-semibold text-lg">
-            ✓ 지원완료
-          </div>
-        ` : ''}
+    <div class="px-4 py-6 space-y-4">
+      <!-- 헤더 -->
+      <div class="mb-2">
+        <h2 class="text-2xl font-bold text-gray-800 mb-1">
+          ${isApplied ? '지원 완료!' : 'AI가 고른 일자리'}
+        </h2>
+        <p class="text-sm text-gray-600">
+          ${isApplied 
+            ? '고용주가 확인 중입니다. 보통 1~3일 내 답변이 옵니다.' 
+            : '가장 적합한 일자리를 찾았어요'}
+        </p>
       </div>
 
       <!-- 1순위 카드 -->
-      <div class="bg-white rounded-3xl shadow-xl p-8 border-2 ${isApplied ? 'border-emerald-400' : 'border-blue-200'}">
+      <div class="bg-white rounded-3xl shadow-lg p-5 ${isApplied ? 'border-2 border-emerald-400' : ''}">
         <!-- 배지 -->
-        <div class="flex items-center justify-between mb-6">
-          <span class="px-6 py-2 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-full font-bold text-lg">
+        <div class="flex items-center justify-between mb-4">
+          <span class="px-4 py-1.5 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-full text-xs font-bold">
             ${topJob.badge}
           </span>
-          <span class="text-3xl font-bold text-blue-900">${topJob.match_score}% 매칭</span>
+          <span class="text-xl font-bold text-blue-900">${topJob.match_score}%</span>
         </div>
 
         <!-- 직무 정보 -->
-        <div class="grid grid-cols-2 gap-8 mb-6">
-          <div>
-            <h3 class="text-3xl font-bold text-gray-800 mb-2">${topJob.title}</h3>
-            <p class="text-xl text-gray-600">${topJob.employer}</p>
+        <h3 class="text-xl font-bold text-gray-800 mb-1">${topJob.title}</h3>
+        <p class="text-sm text-gray-600 mb-4">${topJob.employer}</p>
+
+        <div class="space-y-2 mb-4">
+          <div class="flex items-center gap-2 text-sm">
+            <span class="text-gray-500">📍</span>
+            <span class="font-medium">${topJob.city}</span>
           </div>
-          <div class="space-y-3 text-lg">
-            <div class="flex items-center gap-3">
-              <span class="text-gray-500">📍</span>
-              <span class="font-semibold">${topJob.city}</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="text-gray-500">💰</span>
-              <span class="font-semibold">${topJob.wage}/hour</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="text-gray-500">📅</span>
-              <span class="font-semibold">${topJob.start_display} 시작</span>
-            </div>
+          <div class="flex items-center gap-2 text-sm">
+            <span class="text-gray-500">💰</span>
+            <span class="font-medium">${topJob.wage}/hour</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm">
+            <span class="text-gray-500">📅</span>
+            <span class="font-medium">${topJob.start_display} 시작</span>
           </div>
         </div>
 
         <!-- 선정 이유 -->
-        <div class="bg-blue-50 rounded-2xl p-6 mb-6">
-          <p class="text-gray-700 text-lg">
-            <span class="font-semibold text-blue-900">💡 선정 이유:</span> ${topJob.reason_short}
+        <div class="bg-blue-50 rounded-2xl p-3 mb-4">
+          <p class="text-sm text-gray-700">
+            <span class="font-semibold text-blue-900">💡 선정 이유:</span><br/>
+            ${topJob.reason_short}
           </p>
         </div>
 
@@ -399,48 +342,41 @@ function renderHome() {
         ${!isApplied ? `
           <button 
             onclick="applyJob(${topJob.id})"
-            class="w-full py-5 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-2xl font-bold text-2xl hover:shadow-2xl hover:scale-[1.02] transition-all">
+            class="w-full py-3.5 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-full font-bold text-base shadow-lg active:scale-95 transition-all">
             ⚡ 원터치 지원하기
           </button>
         ` : `
-          <div class="text-center py-4">
-            <p class="text-xl text-emerald-600 font-semibold">✓ 지원이 완료되었습니다</p>
+          <div class="text-center py-3 bg-emerald-50 rounded-full">
+            <p class="text-base text-emerald-700 font-semibold">✓ 지원 완료</p>
           </div>
         `}
       </div>
 
-      <!-- 보조 정보 그리드 -->
-      <div class="grid grid-cols-3 gap-6">
-        <!-- 체크리스트 요약 -->
-        <div class="bg-white rounded-2xl shadow-md p-6">
-          <div class="flex items-center gap-3 mb-4">
-            <span class="text-3xl">✅</span>
-            <h3 class="text-xl font-bold text-gray-800">체크리스트</h3>
-          </div>
-          <p class="text-3xl font-bold text-blue-900 mb-2">${calculateChecklistProgress()}%</p>
-          <p class="text-gray-600">진행률</p>
+      <!-- 요약 카드 -->
+      <div class="grid grid-cols-3 gap-3">
+        <!-- 체크리스트 -->
+        <div class="bg-white rounded-2xl shadow-md p-4 text-center">
+          <div class="text-2xl mb-2">✅</div>
+          <p class="text-2xl font-bold text-blue-900 mb-1">${calculateChecklistProgress()}%</p>
+          <p class="text-xs text-gray-600">체크리스트</p>
         </div>
 
-        <!-- 비자 상태 -->
-        <div class="bg-white rounded-2xl shadow-md p-6">
-          <div class="flex items-center gap-3 mb-4">
-            <span class="text-3xl">🛂</span>
-            <h3 class="text-xl font-bold text-gray-800">비자</h3>
-          </div>
-          <p class="text-lg font-semibold ${AppState.services.visa_demo_done ? 'text-emerald-600' : 'text-gray-400'}">
-            ${AppState.services.visa_demo_done ? '✓ 신청완료' : '연결 예정'}
+        <!-- 비자 -->
+        <div class="bg-white rounded-2xl shadow-md p-4 text-center">
+          <div class="text-2xl mb-2">🛂</div>
+          <p class="text-xs font-semibold ${AppState.services.visa_demo_done ? 'text-emerald-600' : 'text-gray-400'}">
+            ${AppState.services.visa_demo_done ? '✓ 완료' : '대기'}
           </p>
+          <p class="text-xs text-gray-600">비자</p>
         </div>
 
-        <!-- 항공권 상태 -->
-        <div class="bg-white rounded-2xl shadow-md p-6">
-          <div class="flex items-center gap-3 mb-4">
-            <span class="text-3xl">✈️</span>
-            <h3 class="text-xl font-bold text-gray-800">항공권</h3>
-          </div>
-          <p class="text-lg font-semibold ${AppState.services.flight_demo_done ? 'text-emerald-600' : 'text-gray-400'}">
-            ${AppState.services.flight_demo_done ? '✓ 예약완료' : '연결 예정'}
+        <!-- 항공 -->
+        <div class="bg-white rounded-2xl shadow-md p-4 text-center">
+          <div class="text-2xl mb-2">✈️</div>
+          <p class="text-xs font-semibold ${AppState.services.flight_demo_done ? 'text-emerald-600' : 'text-gray-400'}">
+            ${AppState.services.flight_demo_done ? '✓ 완료' : '대기'}
           </p>
+          <p class="text-xs text-gray-600">항공권</p>
         </div>
       </div>
     </div>
@@ -450,59 +386,53 @@ function renderHome() {
 // ============ 일자리 화면 ============
 function renderJobs() {
   return `
-    <div class="space-y-8">
-      <div class="flex items-center justify-between">
-        <h2 class="text-4xl font-bold text-gray-800">일자리 후보</h2>
-        <div class="flex gap-3">
-          <button class="px-6 py-3 bg-blue-900 text-white rounded-xl font-semibold">자동매칭</button>
-          <button class="px-6 py-3 bg-gray-200 text-gray-600 rounded-xl font-semibold">직접찾기</button>
-        </div>
-      </div>
+    <div class="px-4 py-6 space-y-4">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">일자리 후보</h2>
 
-      <div class="grid grid-cols-2 gap-6">
+      <div class="space-y-3">
         ${AppState.matches.map(job => `
-          <div class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <!-- 배지 & 매칭 스코어 -->
-            <div class="flex items-center justify-between mb-4">
-              <span class="px-4 py-2 bg-blue-100 text-blue-900 rounded-full text-sm font-bold">
+          <div class="bg-white rounded-2xl shadow-md p-4">
+            <!-- 배지 & 스코어 -->
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-3 py-1 bg-blue-100 text-blue-900 rounded-full text-xs font-bold">
                 ${job.badge}
               </span>
-              <span class="text-xl font-bold text-blue-900">${job.match_score}%</span>
+              <span class="text-lg font-bold text-blue-900">${job.match_score}%</span>
             </div>
 
-            <!-- 직무 정보 -->
-            <h3 class="text-2xl font-bold text-gray-800 mb-2">${job.title}</h3>
-            <p class="text-gray-600 mb-4">${job.employer}</p>
+            <!-- 직무 -->
+            <h3 class="text-lg font-bold text-gray-800 mb-1">${job.title}</h3>
+            <p class="text-sm text-gray-600 mb-3">${job.employer}</p>
 
-            <div class="space-y-2 mb-4 text-base">
-              <div class="flex items-center gap-2">
+            <div class="space-y-1.5 mb-3">
+              <div class="flex items-center gap-2 text-sm">
                 <span class="text-gray-500">📍</span>
                 <span>${job.city}</span>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 text-sm">
                 <span class="text-gray-500">💰</span>
                 <span>${job.wage}/hour</span>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 text-sm">
                 <span class="text-gray-500">📅</span>
                 <span>${job.start_display} 시작</span>
               </div>
             </div>
 
-            <!-- 선정 이유 -->
-            <div class="bg-gray-50 rounded-xl p-4 mb-4">
-              <p class="text-sm text-gray-700">${job.reason_short}</p>
+            <!-- 이유 -->
+            <div class="bg-gray-50 rounded-xl p-2.5 mb-3">
+              <p class="text-xs text-gray-700">${job.reason_short}</p>
             </div>
 
             <!-- CTA -->
             ${!job.applied ? `
               <button 
                 onclick="applyJob(${job.id})"
-                class="w-full py-3 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-xl font-bold hover:shadow-lg transition-all">
+                class="w-full py-3 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-full font-bold text-sm active:scale-95 transition-all">
                 원터치 지원
               </button>
             ` : `
-              <div class="text-center py-3 bg-emerald-100 text-emerald-700 rounded-xl font-semibold">
+              <div class="text-center py-2.5 bg-emerald-100 text-emerald-700 rounded-full font-semibold text-sm">
                 ✓ 지원완료
               </div>
             `}
@@ -516,38 +446,38 @@ function renderJobs() {
 // ============ 체크리스트 화면 ============
 function renderChecklist() {
   return `
-    <div class="space-y-8">
-      <h2 class="text-4xl font-bold text-gray-800">체크리스트</h2>
+    <div class="px-4 py-6 space-y-4">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">체크리스트</h2>
 
       <!-- 출국 전 -->
-      <div class="bg-white rounded-2xl shadow-lg p-8">
-        <h3 class="text-2xl font-bold text-gray-800 mb-6">출국 전 준비</h3>
-        <div class="space-y-4">
+      <div class="bg-white rounded-2xl shadow-md p-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-3">출국 전 준비</h3>
+        <div class="space-y-2">
           ${CHECKLIST_ITEMS.beforeDeparture.map(item => `
-            <label class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+            <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 active:bg-gray-100 cursor-pointer">
               <input 
                 type="checkbox" 
                 ${item.done ? 'checked' : ''}
                 onchange="toggleCheckItem('beforeDeparture', '${item.id}')"
-                class="w-6 h-6 rounded border-gray-300 text-blue-900 focus:ring-blue-900">
-              <span class="text-lg ${item.done ? 'line-through text-gray-400' : 'text-gray-700'}">${item.label}</span>
+                class="w-5 h-5 rounded border-gray-300 text-blue-900 focus:ring-blue-900">
+              <span class="text-sm flex-1 ${item.done ? 'line-through text-gray-400' : 'text-gray-700'}">${item.label}</span>
             </label>
           `).join('')}
         </div>
       </div>
 
       <!-- 근무 전 -->
-      <div class="bg-white rounded-2xl shadow-lg p-8">
-        <h3 class="text-2xl font-bold text-gray-800 mb-6">근무 전 준비</h3>
-        <div class="space-y-4">
+      <div class="bg-white rounded-2xl shadow-md p-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-3">근무 전 준비</h3>
+        <div class="space-y-2">
           ${CHECKLIST_ITEMS.beforeWork.map(item => `
-            <label class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors">
+            <label class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 active:bg-gray-100 cursor-pointer">
               <input 
                 type="checkbox" 
                 ${item.done ? 'checked' : ''}
                 onchange="toggleCheckItem('beforeWork', '${item.id}')"
-                class="w-6 h-6 rounded border-gray-300 text-blue-900 focus:ring-blue-900">
-              <span class="text-lg ${item.done ? 'line-through text-gray-400' : 'text-gray-700'}">${item.label}</span>
+                class="w-5 h-5 rounded border-gray-300 text-blue-900 focus:ring-blue-900">
+              <span class="text-sm flex-1 ${item.done ? 'line-through text-gray-400' : 'text-gray-700'}">${item.label}</span>
             </label>
           `).join('')}
         </div>
@@ -559,108 +489,134 @@ function renderChecklist() {
 // ============ 마이페이지 화면 ============
 function renderMyPage() {
   return `
-    <div class="space-y-8">
-      <h2 class="text-4xl font-bold text-gray-800">마이페이지</h2>
+    <div class="px-4 py-6 space-y-4">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">마이페이지</h2>
 
-      <!-- 프로필 카드 -->
-      <div class="bg-white rounded-2xl shadow-lg p-8">
-        <h3 class="text-2xl font-bold text-gray-800 mb-6">프로필</h3>
-        <div class="grid grid-cols-2 gap-6">
-          <div>
-            <p class="text-sm text-gray-500 mb-1">이름(영문)</p>
-            <p class="text-xl font-semibold">${AppState.profile.name_en || '미입력'}</p>
+      <!-- 프로필 -->
+      <div class="bg-white rounded-2xl shadow-md p-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-3">프로필</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-600">이름(영문)</span>
+            <span class="font-semibold">${AppState.profile.name_en || '미입력'}</span>
           </div>
-          <div>
-            <p class="text-sm text-gray-500 mb-1">국적</p>
-            <p class="text-xl font-semibold">${AppState.profile.nationality || '미입력'}</p>
+          <div class="flex justify-between">
+            <span class="text-gray-600">국적</span>
+            <span class="font-semibold">${AppState.profile.nationality || '미입력'}</span>
           </div>
-          <div>
-            <p class="text-sm text-gray-500 mb-1">목적지</p>
-            <p class="text-xl font-semibold">${AppState.profile.city || '미입력'}</p>
+          <div class="flex justify-between">
+            <span class="text-gray-600">목적지</span>
+            <span class="font-semibold">${AppState.profile.city || '미입력'}</span>
           </div>
-          <div>
-            <p class="text-sm text-gray-500 mb-1">여권 인증</p>
-            <p class="text-xl font-semibold ${AppState.profile.passport.is_verified ? 'text-emerald-600' : 'text-gray-400'}">
+          <div class="flex justify-between">
+            <span class="text-gray-600">여권 인증</span>
+            <span class="font-semibold ${AppState.profile.passport.is_verified ? 'text-emerald-600' : 'text-gray-400'}">
               ${AppState.profile.passport.is_verified ? '✓ 인증완료' : '미인증'}
-            </p>
+            </span>
+          </div>
+        </div>
+
+        <!-- 진행바 -->
+        <div class="mt-4">
+          <div class="flex justify-between text-xs mb-1.5">
+            <span class="text-gray-600">프로필 완성도</span>
+            <span class="font-semibold text-blue-900">${calculateProfileProgress()}%</span>
+          </div>
+          <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-blue-900 to-cyan-700 transition-all" style="width: ${calculateProfileProgress()}%"></div>
           </div>
         </div>
       </div>
 
       <!-- Services Hub -->
-      <div>
-        <h3 class="text-2xl font-bold text-gray-800 mb-6">Services Hub</h3>
-        <div class="grid grid-cols-3 gap-6">
-          <!-- 비자 자동화 -->
-          <div class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div class="text-4xl mb-4">🛂</div>
-            <h4 class="text-xl font-bold text-gray-800 mb-2">비자 자동화</h4>
-            <p class="text-gray-600 mb-4">n8n 기반 자동 신청</p>
-            <button 
-              onclick="startVisaDemo()"
-              class="w-full py-3 ${AppState.services.visa_demo_done ? 'bg-emerald-600' : 'bg-blue-900'} text-white rounded-xl font-semibold hover:opacity-90 transition-opacity">
-              ${AppState.services.visa_demo_done ? '✓ 완료' : '시작하기'}
-            </button>
-          </div>
+      <div class="bg-white rounded-2xl shadow-md p-4">
+        <h3 class="text-lg font-bold text-gray-800 mb-3">Services Hub</h3>
+        <div class="space-y-2">
+          <!-- 비자 -->
+          <button 
+            onclick="startVisaDemo()"
+            class="w-full flex items-center justify-between p-3 rounded-xl border-2 border-gray-200 active:bg-gray-50 transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">🛂</span>
+              <div class="text-left">
+                <p class="text-sm font-bold text-gray-800">비자 자동화</p>
+                <p class="text-xs text-gray-500">n8n 기반 자동 신청</p>
+              </div>
+            </div>
+            <span class="text-xs px-3 py-1 rounded-full font-semibold ${AppState.services.visa_demo_done ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}">
+              ${AppState.services.visa_demo_done ? '✓ 완료' : '시작'}
+            </span>
+          </button>
 
-          <!-- 항공권 추천 -->
-          <div class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div class="text-4xl mb-4">✈️</div>
-            <h4 class="text-xl font-bold text-gray-800 mb-2">항공권 추천</h4>
-            <p class="text-gray-600 mb-4">3가지 옵션 제시</p>
-            <button 
-              onclick="startFlightDemo()"
-              class="w-full py-3 ${AppState.services.flight_demo_done ? 'bg-emerald-600' : 'bg-blue-900'} text-white rounded-xl font-semibold hover:opacity-90 transition-opacity">
-              ${AppState.services.flight_demo_done ? '✓ 완료' : '시작하기'}
-            </button>
-          </div>
+          <!-- 항공권 -->
+          <button 
+            onclick="startFlightDemo()"
+            class="w-full flex items-center justify-between p-3 rounded-xl border-2 border-gray-200 active:bg-gray-50 transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">✈️</span>
+              <div class="text-left">
+                <p class="text-sm font-bold text-gray-800">항공권 추천</p>
+                <p class="text-xs text-gray-500">3가지 옵션 제시</p>
+              </div>
+            </div>
+            <span class="text-xs px-3 py-1 rounded-full font-semibold ${AppState.services.flight_demo_done ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}">
+              ${AppState.services.flight_demo_done ? '✓ 완료' : '시작'}
+            </span>
+          </button>
 
-          <!-- 숙소 추천 -->
-          <div class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div class="text-4xl mb-4">🏠</div>
-            <h4 class="text-xl font-bold text-gray-800 mb-2">숙소 추천</h4>
-            <p class="text-gray-600 mb-4">3가지 옵션 제시</p>
-            <button 
-              onclick="startStayDemo()"
-              class="w-full py-3 ${AppState.services.stay_demo_done ? 'bg-emerald-600' : 'bg-blue-900'} text-white rounded-xl font-semibold hover:opacity-90 transition-opacity">
-              ${AppState.services.stay_demo_done ? '✓ 완료' : '시작하기'}
-            </button>
-          </div>
+          <!-- 숙소 -->
+          <button 
+            onclick="startStayDemo()"
+            class="w-full flex items-center justify-between p-3 rounded-xl border-2 border-gray-200 active:bg-gray-50 transition-all">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">🏠</span>
+              <div class="text-left">
+                <p class="text-sm font-bold text-gray-800">숙소 추천</p>
+                <p class="text-xs text-gray-500">3가지 옵션 제시</p>
+              </div>
+            </div>
+            <span class="text-xs px-3 py-1 rounded-full font-semibold ${AppState.services.stay_demo_done ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}">
+              ${AppState.services.stay_demo_done ? '✓ 완료' : '시작'}
+            </span>
+          </button>
         </div>
       </div>
     </div>
   `;
 }
 
-// ============ 모달 렌더링 ============
-function renderModalOverlay() {
+// ============ BottomSheet 렌더링 ============
+function renderBottomSheet() {
   const overlay = document.createElement('div');
-  overlay.id = 'modal-overlay';
-  overlay.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8';
+  overlay.id = 'bottomsheet-overlay';
+  overlay.className = 'fixed inset-0 bg-black/40 z-50 flex items-end';
   overlay.onclick = (e) => {
-    if (e.target === overlay) closeModal();
+    if (e.target === overlay) closeBottomSheet();
   };
 
   let content = '';
   
-  if (AppState.modalType === 'profile') {
+  if (AppState.bottomSheetType === 'profile') {
     content = `
-      <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full" onclick="event.stopPropagation()">
-        <h3 class="text-3xl font-bold text-gray-800 mb-6">프로필 정보 입력</h3>
-        <div class="space-y-6">
+      <div class="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+          <h3 class="text-xl font-bold text-gray-800">프로필 정보 입력</h3>
+        </div>
+        <div class="px-6 py-5 space-y-4">
           <div>
-            <label class="block text-lg font-semibold text-gray-700 mb-2">이름(영문)</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">이름(영문)</label>
             <input 
               type="text" 
               id="profileName"
               placeholder="HONG GILDONG"
-              class="w-full px-6 py-4 border-2 border-gray-300 rounded-xl text-lg focus:border-blue-900 focus:outline-none">
+              class="w-full px-4 py-3 border-2 border-gray-300 rounded-2xl text-base focus:border-blue-900 focus:outline-none">
           </div>
           <div>
-            <label class="block text-lg font-semibold text-gray-700 mb-2">국적</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">국적</label>
             <select 
               id="profileNationality"
-              class="w-full px-6 py-4 border-2 border-gray-300 rounded-xl text-lg focus:border-blue-900 focus:outline-none">
+              class="w-full px-4 py-3 border-2 border-gray-300 rounded-2xl text-base focus:border-blue-900 focus:outline-none">
               <option value="">선택하세요</option>
               <option value="South Korea">South Korea</option>
               <option value="Japan">Japan</option>
@@ -669,106 +625,123 @@ function renderModalOverlay() {
           </div>
           <button 
             onclick="submitProfile()"
-            class="w-full py-4 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-xl font-bold text-xl hover:shadow-lg transition-all">
+            class="w-full py-3.5 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-full font-bold text-base active:scale-95 transition-all">
             다음
           </button>
         </div>
       </div>
     `;
-  } else if (AppState.modalType === 'passport') {
+  } else if (AppState.bottomSheetType === 'passport') {
     content = `
-      <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full text-center" onclick="event.stopPropagation()">
-        <div class="text-6xl mb-6">📸</div>
-        <h3 class="text-3xl font-bold text-gray-800 mb-4">여권 정보 스캔</h3>
-        <p class="text-xl text-gray-600 mb-8">여권 사진면을 스캔하면<br/>자동으로 정보가 입력됩니다</p>
-        <div class="space-y-4">
-          <button 
-            onclick="simulatePassportScan()"
-            class="w-full py-4 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-xl font-bold text-xl hover:shadow-lg transition-all">
-            여권 스캔하기
-          </button>
-          <button 
-            onclick="skipPassport()"
-            class="w-full py-4 bg-gray-200 text-gray-700 rounded-xl font-semibold text-lg hover:bg-gray-300 transition-all">
-            나중에 하기
-          </button>
+      <div class="bg-white rounded-t-3xl w-full" onclick="event.stopPropagation()">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+          <h3 class="text-xl font-bold text-gray-800 text-center">여권 정보 스캔</h3>
+        </div>
+        <div class="px-6 py-6 text-center">
+          <div class="text-6xl mb-4">📸</div>
+          <p class="text-base text-gray-600 mb-6">여권 사진면을 스캔하면<br/>자동으로 정보가 입력됩니다</p>
+          <div class="space-y-3">
+            <button 
+              onclick="simulatePassportScan()"
+              class="w-full py-3.5 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-full font-bold text-base active:scale-95 transition-all">
+              여권 스캔하기
+            </button>
+            <button 
+              onclick="skipPassport()"
+              class="w-full py-3.5 bg-gray-200 text-gray-700 rounded-full font-semibold text-base active:scale-95 transition-all">
+              나중에 하기
+            </button>
+          </div>
         </div>
       </div>
     `;
-  } else if (AppState.modalType === 'visa') {
+  } else if (AppState.bottomSheetType === 'visa') {
     content = `
-      <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-3xl w-full" onclick="event.stopPropagation()">
-        <h3 class="text-3xl font-bold text-gray-800 mb-6">비자 자동화 (n8n)</h3>
-        
-        <!-- 3단계 스테퍼 -->
-        <div class="flex items-center justify-between mb-8">
-          <div class="flex-1 text-center">
-            <div class="w-12 h-12 mx-auto bg-blue-900 text-white rounded-full flex items-center justify-center font-bold text-xl mb-2">1</div>
-            <p class="text-sm font-semibold">서류 스캔</p>
+      <div class="bg-white rounded-t-3xl w-full" onclick="event.stopPropagation()">
+        <div class="px-6 py-5">
+          <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+          <h3 class="text-xl font-bold text-gray-800 mb-4">비자 자동화</h3>
+          
+          <!-- 스테퍼 -->
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex-1 text-center">
+              <div class="w-10 h-10 mx-auto bg-blue-900 text-white rounded-full flex items-center justify-center font-bold mb-1">1</div>
+              <p class="text-xs font-medium">서류 스캔</p>
+            </div>
+            <div class="flex-1 h-0.5 bg-blue-900"></div>
+            <div class="flex-1 text-center">
+              <div class="w-10 h-10 mx-auto bg-blue-900 text-white rounded-full flex items-center justify-center font-bold mb-1">2</div>
+              <p class="text-xs font-medium">자동 입력</p>
+            </div>
+            <div class="flex-1 h-0.5 bg-gray-300"></div>
+            <div class="flex-1 text-center">
+              <div class="w-10 h-10 mx-auto bg-gray-300 text-white rounded-full flex items-center justify-center font-bold mb-1">3</div>
+              <p class="text-xs font-medium">제출</p>
+            </div>
           </div>
-          <div class="flex-1 h-1 bg-gray-300"></div>
-          <div class="flex-1 text-center">
-            <div class="w-12 h-12 mx-auto bg-blue-900 text-white rounded-full flex items-center justify-center font-bold text-xl mb-2">2</div>
-            <p class="text-sm font-semibold">자동 입력</p>
-          </div>
-          <div class="flex-1 h-1 bg-gray-300"></div>
-          <div class="flex-1 text-center">
-            <div class="w-12 h-12 mx-auto bg-gray-300 text-white rounded-full flex items-center justify-center font-bold text-xl mb-2">3</div>
-            <p class="text-sm font-semibold">제출</p>
-          </div>
-        </div>
 
-        <div class="text-center py-8">
-          <div class="text-5xl mb-4 animate-pulse">🔄</div>
-          <p class="text-xl text-gray-600">n8n이 자동으로 비자 신청을 처리 중...</p>
+          <div class="text-center py-8">
+            <div class="text-5xl mb-3 animate-pulse">🔄</div>
+            <p class="text-base text-gray-600">n8n이 자동으로 처리 중...</p>
+          </div>
         </div>
       </div>
     `;
 
-    // 3초 후 완료
     setTimeout(() => {
       AppState.services.visa_demo_done = true;
       CHECKLIST_ITEMS.beforeDeparture.find(i => i.id === 'visa').done = true;
-      closeModal();
-      showToast('✓ 비자 신청이 완료되었습니다!', 'success');
+      closeBottomSheet();
+      showToast('✓ 비자 신청이 완료되었습니다!');
     }, 3000);
 
-  } else if (AppState.modalType === 'flight') {
+  } else if (AppState.bottomSheetType === 'flight') {
     content = `
-      <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-4xl w-full" onclick="event.stopPropagation()">
-        <h3 class="text-3xl font-bold text-gray-800 mb-6">항공권 추천</h3>
-        <div class="grid grid-cols-3 gap-6">
+      <div class="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+          <h3 class="text-xl font-bold text-gray-800">항공권 추천</h3>
+        </div>
+        <div class="px-6 py-5 space-y-3">
           ${FLIGHT_OPTIONS.map(f => `
-            <div class="border-2 border-gray-200 rounded-2xl p-6 hover:border-blue-900 transition-all cursor-pointer" onclick="selectFlight('${f.id}')">
-              <div class="text-center mb-4">
-                <span class="px-4 py-2 bg-blue-100 text-blue-900 rounded-full text-sm font-bold">${f.type}</span>
+            <button 
+              onclick="selectFlight('${f.id}')" 
+              class="w-full border-2 border-gray-200 rounded-2xl p-4 text-left active:bg-gray-50 transition-all">
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-3 py-1 bg-blue-100 text-blue-900 rounded-full text-xs font-bold">${f.type}</span>
+                <span class="text-lg font-bold text-gray-800">${f.price}</span>
               </div>
-              <p class="text-2xl font-bold text-center text-gray-800 mb-2">${f.price}</p>
-              <p class="text-lg font-semibold text-gray-700 mb-1">${f.airline}</p>
+              <p class="text-base font-semibold text-gray-700 mb-1">${f.airline}</p>
               <p class="text-sm text-gray-600 mb-1">${f.route}</p>
-              <p class="text-sm text-gray-600 mb-3">${f.duration}</p>
+              <p class="text-sm text-gray-600 mb-2">${f.duration}</p>
               <p class="text-sm text-blue-900 font-semibold">${f.highlight}</p>
-            </div>
+            </button>
           `).join('')}
         </div>
       </div>
     `;
-  } else if (AppState.modalType === 'stay') {
+  } else if (AppState.bottomSheetType === 'stay') {
     content = `
-      <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-4xl w-full" onclick="event.stopPropagation()">
-        <h3 class="text-3xl font-bold text-gray-800 mb-6">숙소 추천</h3>
-        <div class="grid grid-cols-3 gap-6">
+      <div class="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="px-6 py-5 border-b border-gray-200">
+          <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+          <h3 class="text-xl font-bold text-gray-800">숙소 추천</h3>
+        </div>
+        <div class="px-6 py-5 space-y-3">
           ${STAY_OPTIONS.map(s => `
-            <div class="border-2 border-gray-200 rounded-2xl p-6 hover:border-blue-900 transition-all cursor-pointer" onclick="selectStay('${s.id}')">
-              <div class="text-center mb-4">
-                <span class="px-4 py-2 bg-blue-100 text-blue-900 rounded-full text-sm font-bold">${s.type}</span>
+            <button 
+              onclick="selectStay('${s.id}')" 
+              class="w-full border-2 border-gray-200 rounded-2xl p-4 text-left active:bg-gray-50 transition-all">
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-3 py-1 bg-blue-100 text-blue-900 rounded-full text-xs font-bold">${s.type}</span>
+                <span class="text-lg font-bold text-gray-800">${s.price}</span>
               </div>
-              <p class="text-2xl font-bold text-center text-gray-800 mb-2">${s.price}</p>
-              <p class="text-lg font-semibold text-gray-700 mb-1">${s.name}</p>
+              <p class="text-base font-semibold text-gray-700 mb-1">${s.name}</p>
               <p class="text-sm text-gray-600 mb-1">${s.location}</p>
-              <p class="text-sm text-gray-600 mb-3">${s.rooms}</p>
+              <p class="text-sm text-gray-600 mb-2">${s.rooms}</p>
               <p class="text-sm text-blue-900 font-semibold">${s.highlight}</p>
-            </div>
+            </button>
           `).join('')}
         </div>
       </div>
@@ -777,6 +750,11 @@ function renderModalOverlay() {
 
   overlay.innerHTML = content;
   document.body.appendChild(overlay);
+  
+  // 애니메이션
+  setTimeout(() => {
+    overlay.querySelector('.bg-white').classList.add('animate-slide-up');
+  }, 10);
 }
 
 // ============ 토스트 렌더링 ============
@@ -786,8 +764,7 @@ function renderToast() {
 
   const el = document.createElement('div');
   el.id = 'toast';
-  el.className = `fixed top-8 right-8 px-8 py-4 rounded-2xl shadow-2xl text-white font-semibold text-lg z-50 animate-slide-down
-    ${AppState.toast.type === 'success' ? 'bg-emerald-600' : 'bg-red-500'}`;
+  el.className = 'fixed top-safe-top left-4 right-4 px-5 py-3 rounded-2xl shadow-2xl text-white font-semibold text-sm z-50 bg-emerald-600 animate-slide-down';
   el.textContent = AppState.toast.message;
   document.body.appendChild(el);
 
@@ -818,7 +795,6 @@ function submitOnboarding() {
   AppState.match_status = 'MATCHING';
   render();
 
-  // 1초 후 매칭 완료
   setTimeout(() => {
     AppState.matches = DUMMY_MATCHES;
     AppState.match_status = 'READY';
@@ -829,24 +805,22 @@ function submitOnboarding() {
 }
 
 function applyJob(jobId) {
-  // 정보 체크
   if (!AppState.profile.name_en || !AppState.profile.nationality) {
-    AppState.showModal = true;
-    AppState.modalType = 'profile';
-    AppState.modalData = { jobId };
+    AppState.showBottomSheet = true;
+    AppState.bottomSheetType = 'profile';
+    AppState.bottomSheetData = { jobId };
     render();
     return;
   }
 
   if (!AppState.profile.passport.is_verified) {
-    AppState.showModal = true;
-    AppState.modalType = 'passport';
-    AppState.modalData = { jobId };
+    AppState.showBottomSheet = true;
+    AppState.bottomSheetType = 'passport';
+    AppState.bottomSheetData = { jobId };
     render();
     return;
   }
 
-  // 지원 제출
   submitApplication(jobId);
 }
 
@@ -862,23 +836,22 @@ function submitProfile() {
   AppState.profile.name_en = name;
   AppState.profile.nationality = nationality;
 
-  // 여권 체크
   if (!AppState.profile.passport.is_verified) {
-    AppState.modalType = 'passport';
+    AppState.bottomSheetType = 'passport';
     render();
   } else {
-    const jobId = AppState.modalData.jobId;
-    closeModal();
+    const jobId = AppState.bottomSheetData.jobId;
+    closeBottomSheet();
     submitApplication(jobId);
   }
 }
 
 function simulatePassportScan() {
-  const modal = document.querySelector('#modal-overlay > div');
-  modal.innerHTML = `
-    <div class="text-center py-12">
+  const sheet = document.querySelector('#bottomsheet-overlay .bg-white');
+  sheet.innerHTML = `
+    <div class="px-6 py-12 text-center">
       <div class="text-6xl mb-4 animate-pulse">📸</div>
-      <p class="text-2xl text-gray-700">여권 스캔 중...</p>
+      <p class="text-lg text-gray-700">여권 스캔 중...</p>
     </div>
   `;
 
@@ -890,46 +863,46 @@ function simulatePassportScan() {
       expiry: '2030-12-31'
     };
 
-    const jobId = AppState.modalData.jobId;
-    closeModal();
+    const jobId = AppState.bottomSheetData.jobId;
+    closeBottomSheet();
     submitApplication(jobId);
   }, 600);
 }
 
 function skipPassport() {
-  closeModal();
+  closeBottomSheet();
 }
 
 function submitApplication(jobId) {
   const job = AppState.matches.find(j => j.id === jobId);
   if (!job) return;
 
-  // 로딩 표시
-  const modal = document.createElement('div');
-  modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
-  modal.innerHTML = `
-    <div class="bg-white rounded-3xl shadow-2xl p-12 text-center">
-      <div class="text-6xl mb-4 animate-pulse">⚡</div>
-      <p class="text-2xl text-gray-700">지원서 자동 제출 중...</p>
+  // 로딩
+  const overlay = document.createElement('div');
+  overlay.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+  overlay.innerHTML = `
+    <div class="bg-white rounded-3xl shadow-2xl p-8 text-center mx-6">
+      <div class="text-5xl mb-3 animate-pulse">⚡</div>
+      <p class="text-lg text-gray-700">지원서 자동 제출 중...</p>
     </div>
   `;
-  document.body.appendChild(modal);
+  document.body.appendChild(overlay);
 
   setTimeout(() => {
-    modal.remove();
+    overlay.remove();
     job.applied = true;
     AppState.match_status = 'APPLIED';
     CHECKLIST_ITEMS.beforeWork.find(i => i.id === 'tfn').done = true;
-    showToast('✓ 지원이 완료되었습니다!', 'success');
+    showToast('✓ 지원이 완료되었습니다!');
     render();
   }, 800);
 }
 
-function closeModal() {
-  AppState.showModal = false;
-  AppState.modalType = null;
-  AppState.modalData = null;
-  const overlay = document.getElementById('modal-overlay');
+function closeBottomSheet() {
+  AppState.showBottomSheet = false;
+  AppState.bottomSheetType = null;
+  AppState.bottomSheetData = null;
+  const overlay = document.getElementById('bottomsheet-overlay');
   if (overlay) overlay.remove();
 }
 
@@ -952,39 +925,50 @@ function calculateChecklistProgress() {
   return Math.round((done / all.length) * 100);
 }
 
+function calculateProfileProgress() {
+  const items = [
+    AppState.profile.city,
+    AppState.profile.name_en,
+    AppState.profile.nationality,
+    AppState.profile.passport.is_verified
+  ];
+  const completed = items.filter(Boolean).length;
+  return Math.round((completed / items.length) * 100);
+}
+
 function startVisaDemo() {
-  AppState.showModal = true;
-  AppState.modalType = 'visa';
+  AppState.showBottomSheet = true;
+  AppState.bottomSheetType = 'visa';
   render();
 }
 
 function startFlightDemo() {
-  AppState.showModal = true;
-  AppState.modalType = 'flight';
+  AppState.showBottomSheet = true;
+  AppState.bottomSheetType = 'flight';
   render();
 }
 
 function selectFlight(flightId) {
   AppState.services.flight_demo_done = true;
   CHECKLIST_ITEMS.beforeDeparture.find(i => i.id === 'flight').done = true;
-  closeModal();
-  showToast('✓ 항공권 예약이 완료되었습니다!', 'success');
+  closeBottomSheet();
+  showToast('✓ 항공권 예약이 완료되었습니다!');
 }
 
 function startStayDemo() {
-  AppState.showModal = true;
-  AppState.modalType = 'stay';
+  AppState.showBottomSheet = true;
+  AppState.bottomSheetType = 'stay';
   render();
 }
 
 function selectStay(stayId) {
   AppState.services.stay_demo_done = true;
-  closeModal();
-  showToast('✓ 숙소 예약이 완료되었습니다!', 'success');
+  closeBottomSheet();
+  showToast('✓ 숙소 예약이 완료되었습니다!');
 }
 
-function showToast(message, type = 'success') {
-  AppState.toast = { message, type };
+function showToast(message) {
+  AppState.toast = { message };
   render();
 }
 
