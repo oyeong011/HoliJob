@@ -13,18 +13,20 @@ app.get('/', (c) => {
     <html lang="ko">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <title>HoliJob - 도착 전에 일부터 정해드립니다</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="/static/style.css">
         <style>
           body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
           }
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-          .animate-spin {
-            animation: spin 1s linear infinite;
+          * {
+            -webkit-tap-highlight-color: transparent;
           }
         </style>
     </head>
