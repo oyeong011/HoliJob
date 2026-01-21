@@ -154,12 +154,15 @@
 
 ## 디자인 시스템
 
-### 색상 팔레트
-- **Primary**: Purple-600 → Pink-600 (그라디언트)
-- **Success**: Green-500
-- **Warning**: Yellow-400 → Orange-500
-- **Danger**: Red-500
-- **Accent**: Purple-500 → Pink-500
+### 색상 팔레트 (신뢰감 & 전문성)
+- **Primary**: Navy Blue (#1e40af, #1e3a8a) - 신뢰감, 전문성
+- **Accent**: Cyan (#0891b2, #06b6d4) - 현대적, 깔끔
+- **Success**: Emerald (#059669, #10b981) - 안정감, 완료
+- **Warning**: Orange (#ea580c, #f97316) - 주의
+- **Danger**: Red (#dc2626, #ef4444) - 위험, 오류
+- **배경**: 밝은 회색 (#f9fafb, #f3f4f6) - 깔끔함
+
+**디자인 철학**: 보라색-핑크 그라디언트 대신 네이비-청록 조합으로 전문적이고 신뢰감 있는 이미지 구축
 
 ### 타이포그래피
 - **제목**: 32~40px semibold
