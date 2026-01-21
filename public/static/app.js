@@ -130,7 +130,7 @@ function render() {
 // ============ 스플래시 화면 ============
 function renderSplash() {
   return `
-    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500">
+    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-700">
       <div class="text-center px-8 max-w-2xl">
         <div class="text-8xl mb-8 animate-bounce">✈️</div>
         <h1 class="text-6xl font-bold text-white mb-6">HoliJob</h1>
@@ -138,7 +138,7 @@ function renderSplash() {
         <p class="text-lg text-white/80 mb-12">AI가 당신에게 맞는 일자리를 골라드려요<br/>버튼 하나로 지원 완료</p>
         <button 
           onclick="startApp()"
-          class="px-12 py-5 bg-white text-purple-600 rounded-2xl font-bold text-xl hover:scale-105 transition-transform shadow-2xl">
+          class="px-12 py-5 bg-white text-blue-900 rounded-2xl font-bold text-xl hover:scale-105 transition-transform shadow-2xl">
           시작하기
         </button>
       </div>
@@ -151,7 +151,7 @@ function renderOnboarding() {
   const cities = ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide'];
   
   return `
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-8">
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center p-8">
       <div class="bg-white rounded-3xl shadow-2xl p-12 max-w-3xl w-full">
         <div class="text-center mb-10">
           <div class="text-5xl mb-4">🎯</div>
@@ -169,8 +169,8 @@ function renderOnboarding() {
                   onclick="selectCity('${city}')"
                   class="px-8 py-4 rounded-full border-2 text-lg font-medium transition-all
                     ${AppState.profile.city === city 
-                      ? 'bg-purple-600 text-white border-purple-600' 
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-purple-400'}">
+                      ? 'bg-blue-900 text-white border-blue-900' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-600'}">
                   ${city}
                 </button>
               `).join('')}
@@ -183,7 +183,7 @@ function renderOnboarding() {
             <input 
               type="date" 
               id="departDate"
-              class="w-full px-6 py-4 border-2 border-gray-300 rounded-xl text-lg focus:border-purple-500 focus:outline-none"
+              class="w-full px-6 py-4 border-2 border-gray-300 rounded-xl text-lg focus:border-blue-900 focus:outline-none"
               value="${AppState.profile.depart_date || ''}">
           </div>
 
@@ -193,7 +193,7 @@ function renderOnboarding() {
             ${!AppState.profile.city ? 'disabled' : ''}
             class="w-full py-5 rounded-xl font-bold text-xl transition-all shadow-lg
               ${AppState.profile.city 
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-xl hover:scale-[1.02]' 
+                ? 'bg-gradient-to-r from-blue-900 to-cyan-700 text-white hover:shadow-xl hover:scale-[1.02]' 
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'}">
             AI 매칭 시작하기
           </button>
@@ -206,12 +206,12 @@ function renderOnboarding() {
 // ============ AI 매칭 로딩 ============
 function renderMatching() {
   return `
-    <div class="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center p-8">
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center p-8">
       <div class="text-center max-w-2xl">
         <div class="relative mb-8">
           <div class="w-32 h-32 mx-auto">
-            <div class="absolute inset-0 border-8 border-purple-200 rounded-full"></div>
-            <div class="absolute inset-0 border-8 border-purple-600 rounded-full border-t-transparent animate-spin"></div>
+            <div class="absolute inset-0 border-8 border-blue-200 rounded-full"></div>
+            <div class="absolute inset-0 border-8 border-blue-900 rounded-full border-t-transparent animate-spin"></div>
           </div>
         </div>
         <h2 class="text-4xl font-bold text-gray-800 mb-4">AI가 당신 조건에 맞는<br/>일자리를 고르는 중...</h2>
@@ -254,7 +254,7 @@ function renderMainLayout() {
         <!-- 프로필 요약 -->
         <div class="p-6 border-t border-gray-200">
           <div class="flex items-center gap-3 mb-3">
-            <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold text-lg">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-900 to-cyan-700 rounded-full flex items-center justify-center text-white font-bold text-lg">
               ${AppState.profile.name_en ? AppState.profile.name_en.charAt(0).toUpperCase() : '?'}
             </div>
             <div class="flex-1">
@@ -282,7 +282,7 @@ function renderNavItem(tab, icon, label, active) {
       onclick="switchTab('${tab}')"
       class="w-full flex items-center gap-4 px-6 py-4 rounded-xl text-left transition-all
         ${active 
-          ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg' 
+          ? 'bg-gradient-to-r from-blue-900 to-cyan-700 text-white shadow-lg' 
           : 'text-gray-700 hover:bg-gray-100'}">
       <span class="text-2xl">${icon}</span>
       <span class="font-semibold text-lg">${label}</span>
@@ -304,10 +304,10 @@ function renderProfileCompletionBar() {
     <div>
       <div class="flex justify-between text-sm mb-2">
         <span class="text-gray-600">프로필 완성도</span>
-        <span class="font-semibold text-purple-600">${percent}%</span>
+        <span class="font-semibold text-blue-900">${percent}%</span>
       </div>
       <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div class="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all" style="width: ${percent}%"></div>
+        <div class="h-full bg-gradient-to-r from-blue-900 to-cyan-700 transition-all" style="width: ${percent}%"></div>
       </div>
     </div>
   `;
@@ -357,13 +357,13 @@ function renderHome() {
       </div>
 
       <!-- 1순위 카드 -->
-      <div class="bg-white rounded-3xl shadow-xl p-8 border-2 ${isApplied ? 'border-green-400' : 'border-purple-200'}">
+      <div class="bg-white rounded-3xl shadow-xl p-8 border-2 ${isApplied ? 'border-emerald-400' : 'border-blue-200'}">
         <!-- 배지 -->
         <div class="flex items-center justify-between mb-6">
-          <span class="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-bold text-lg">
+          <span class="px-6 py-2 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-full font-bold text-lg">
             ${topJob.badge}
           </span>
-          <span class="text-3xl font-bold text-purple-600">${topJob.match_score}% 매칭</span>
+          <span class="text-3xl font-bold text-blue-900">${topJob.match_score}% 매칭</span>
         </div>
 
         <!-- 직무 정보 -->
@@ -389,9 +389,9 @@ function renderHome() {
         </div>
 
         <!-- 선정 이유 -->
-        <div class="bg-purple-50 rounded-2xl p-6 mb-6">
+        <div class="bg-blue-50 rounded-2xl p-6 mb-6">
           <p class="text-gray-700 text-lg">
-            <span class="font-semibold text-purple-700">💡 선정 이유:</span> ${topJob.reason_short}
+            <span class="font-semibold text-blue-900">💡 선정 이유:</span> ${topJob.reason_short}
           </p>
         </div>
 
@@ -399,12 +399,12 @@ function renderHome() {
         ${!isApplied ? `
           <button 
             onclick="applyJob(${topJob.id})"
-            class="w-full py-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-bold text-2xl hover:shadow-2xl hover:scale-[1.02] transition-all">
+            class="w-full py-5 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-2xl font-bold text-2xl hover:shadow-2xl hover:scale-[1.02] transition-all">
             ⚡ 원터치 지원하기
           </button>
         ` : `
           <div class="text-center py-4">
-            <p class="text-xl text-green-600 font-semibold">✓ 지원이 완료되었습니다</p>
+            <p class="text-xl text-emerald-600 font-semibold">✓ 지원이 완료되었습니다</p>
           </div>
         `}
       </div>
@@ -417,7 +417,7 @@ function renderHome() {
             <span class="text-3xl">✅</span>
             <h3 class="text-xl font-bold text-gray-800">체크리스트</h3>
           </div>
-          <p class="text-3xl font-bold text-purple-600 mb-2">${calculateChecklistProgress()}%</p>
+          <p class="text-3xl font-bold text-blue-900 mb-2">${calculateChecklistProgress()}%</p>
           <p class="text-gray-600">진행률</p>
         </div>
 
@@ -427,7 +427,7 @@ function renderHome() {
             <span class="text-3xl">🛂</span>
             <h3 class="text-xl font-bold text-gray-800">비자</h3>
           </div>
-          <p class="text-lg font-semibold ${AppState.services.visa_demo_done ? 'text-green-600' : 'text-gray-400'}">
+          <p class="text-lg font-semibold ${AppState.services.visa_demo_done ? 'text-emerald-600' : 'text-gray-400'}">
             ${AppState.services.visa_demo_done ? '✓ 신청완료' : '연결 예정'}
           </p>
         </div>
@@ -438,7 +438,7 @@ function renderHome() {
             <span class="text-3xl">✈️</span>
             <h3 class="text-xl font-bold text-gray-800">항공권</h3>
           </div>
-          <p class="text-lg font-semibold ${AppState.services.flight_demo_done ? 'text-green-600' : 'text-gray-400'}">
+          <p class="text-lg font-semibold ${AppState.services.flight_demo_done ? 'text-emerald-600' : 'text-gray-400'}">
             ${AppState.services.flight_demo_done ? '✓ 예약완료' : '연결 예정'}
           </p>
         </div>
@@ -454,7 +454,7 @@ function renderJobs() {
       <div class="flex items-center justify-between">
         <h2 class="text-4xl font-bold text-gray-800">일자리 후보</h2>
         <div class="flex gap-3">
-          <button class="px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold">자동매칭</button>
+          <button class="px-6 py-3 bg-blue-900 text-white rounded-xl font-semibold">자동매칭</button>
           <button class="px-6 py-3 bg-gray-200 text-gray-600 rounded-xl font-semibold">직접찾기</button>
         </div>
       </div>
@@ -464,10 +464,10 @@ function renderJobs() {
           <div class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
             <!-- 배지 & 매칭 스코어 -->
             <div class="flex items-center justify-between mb-4">
-              <span class="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-bold">
+              <span class="px-4 py-2 bg-blue-100 text-blue-900 rounded-full text-sm font-bold">
                 ${job.badge}
               </span>
-              <span class="text-xl font-bold text-purple-600">${job.match_score}%</span>
+              <span class="text-xl font-bold text-blue-900">${job.match_score}%</span>
             </div>
 
             <!-- 직무 정보 -->
@@ -498,11 +498,11 @@ function renderJobs() {
             ${!job.applied ? `
               <button 
                 onclick="applyJob(${job.id})"
-                class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:shadow-lg transition-all">
+                class="w-full py-3 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-xl font-bold hover:shadow-lg transition-all">
                 원터치 지원
               </button>
             ` : `
-              <div class="text-center py-3 bg-green-100 text-green-700 rounded-xl font-semibold">
+              <div class="text-center py-3 bg-emerald-100 text-emerald-700 rounded-xl font-semibold">
                 ✓ 지원완료
               </div>
             `}
@@ -529,7 +529,7 @@ function renderChecklist() {
                 type="checkbox" 
                 ${item.done ? 'checked' : ''}
                 onchange="toggleCheckItem('beforeDeparture', '${item.id}')"
-                class="w-6 h-6 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                class="w-6 h-6 rounded border-gray-300 text-blue-900 focus:ring-blue-900">
               <span class="text-lg ${item.done ? 'line-through text-gray-400' : 'text-gray-700'}">${item.label}</span>
             </label>
           `).join('')}
@@ -546,7 +546,7 @@ function renderChecklist() {
                 type="checkbox" 
                 ${item.done ? 'checked' : ''}
                 onchange="toggleCheckItem('beforeWork', '${item.id}')"
-                class="w-6 h-6 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                class="w-6 h-6 rounded border-gray-300 text-blue-900 focus:ring-blue-900">
               <span class="text-lg ${item.done ? 'line-through text-gray-400' : 'text-gray-700'}">${item.label}</span>
             </label>
           `).join('')}
@@ -580,7 +580,7 @@ function renderMyPage() {
           </div>
           <div>
             <p class="text-sm text-gray-500 mb-1">여권 인증</p>
-            <p class="text-xl font-semibold ${AppState.profile.passport.is_verified ? 'text-green-600' : 'text-gray-400'}">
+            <p class="text-xl font-semibold ${AppState.profile.passport.is_verified ? 'text-emerald-600' : 'text-gray-400'}">
               ${AppState.profile.passport.is_verified ? '✓ 인증완료' : '미인증'}
             </p>
           </div>
@@ -598,7 +598,7 @@ function renderMyPage() {
             <p class="text-gray-600 mb-4">n8n 기반 자동 신청</p>
             <button 
               onclick="startVisaDemo()"
-              class="w-full py-3 ${AppState.services.visa_demo_done ? 'bg-green-500' : 'bg-purple-600'} text-white rounded-xl font-semibold hover:opacity-90 transition-opacity">
+              class="w-full py-3 ${AppState.services.visa_demo_done ? 'bg-emerald-600' : 'bg-blue-900'} text-white rounded-xl font-semibold hover:opacity-90 transition-opacity">
               ${AppState.services.visa_demo_done ? '✓ 완료' : '시작하기'}
             </button>
           </div>
@@ -610,7 +610,7 @@ function renderMyPage() {
             <p class="text-gray-600 mb-4">3가지 옵션 제시</p>
             <button 
               onclick="startFlightDemo()"
-              class="w-full py-3 ${AppState.services.flight_demo_done ? 'bg-green-500' : 'bg-purple-600'} text-white rounded-xl font-semibold hover:opacity-90 transition-opacity">
+              class="w-full py-3 ${AppState.services.flight_demo_done ? 'bg-emerald-600' : 'bg-blue-900'} text-white rounded-xl font-semibold hover:opacity-90 transition-opacity">
               ${AppState.services.flight_demo_done ? '✓ 완료' : '시작하기'}
             </button>
           </div>
@@ -622,7 +622,7 @@ function renderMyPage() {
             <p class="text-gray-600 mb-4">3가지 옵션 제시</p>
             <button 
               onclick="startStayDemo()"
-              class="w-full py-3 ${AppState.services.stay_demo_done ? 'bg-green-500' : 'bg-purple-600'} text-white rounded-xl font-semibold hover:opacity-90 transition-opacity">
+              class="w-full py-3 ${AppState.services.stay_demo_done ? 'bg-emerald-600' : 'bg-blue-900'} text-white rounded-xl font-semibold hover:opacity-90 transition-opacity">
               ${AppState.services.stay_demo_done ? '✓ 완료' : '시작하기'}
             </button>
           </div>
@@ -654,13 +654,13 @@ function renderModalOverlay() {
               type="text" 
               id="profileName"
               placeholder="HONG GILDONG"
-              class="w-full px-6 py-4 border-2 border-gray-300 rounded-xl text-lg focus:border-purple-500 focus:outline-none">
+              class="w-full px-6 py-4 border-2 border-gray-300 rounded-xl text-lg focus:border-blue-900 focus:outline-none">
           </div>
           <div>
             <label class="block text-lg font-semibold text-gray-700 mb-2">국적</label>
             <select 
               id="profileNationality"
-              class="w-full px-6 py-4 border-2 border-gray-300 rounded-xl text-lg focus:border-purple-500 focus:outline-none">
+              class="w-full px-6 py-4 border-2 border-gray-300 rounded-xl text-lg focus:border-blue-900 focus:outline-none">
               <option value="">선택하세요</option>
               <option value="South Korea">South Korea</option>
               <option value="Japan">Japan</option>
@@ -669,7 +669,7 @@ function renderModalOverlay() {
           </div>
           <button 
             onclick="submitProfile()"
-            class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-xl hover:shadow-lg transition-all">
+            class="w-full py-4 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-xl font-bold text-xl hover:shadow-lg transition-all">
             다음
           </button>
         </div>
@@ -684,7 +684,7 @@ function renderModalOverlay() {
         <div class="space-y-4">
           <button 
             onclick="simulatePassportScan()"
-            class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-xl hover:shadow-lg transition-all">
+            class="w-full py-4 bg-gradient-to-r from-blue-900 to-cyan-700 text-white rounded-xl font-bold text-xl hover:shadow-lg transition-all">
             여권 스캔하기
           </button>
           <button 
@@ -703,12 +703,12 @@ function renderModalOverlay() {
         <!-- 3단계 스테퍼 -->
         <div class="flex items-center justify-between mb-8">
           <div class="flex-1 text-center">
-            <div class="w-12 h-12 mx-auto bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-xl mb-2">1</div>
+            <div class="w-12 h-12 mx-auto bg-blue-900 text-white rounded-full flex items-center justify-center font-bold text-xl mb-2">1</div>
             <p class="text-sm font-semibold">서류 스캔</p>
           </div>
           <div class="flex-1 h-1 bg-gray-300"></div>
           <div class="flex-1 text-center">
-            <div class="w-12 h-12 mx-auto bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-xl mb-2">2</div>
+            <div class="w-12 h-12 mx-auto bg-blue-900 text-white rounded-full flex items-center justify-center font-bold text-xl mb-2">2</div>
             <p class="text-sm font-semibold">자동 입력</p>
           </div>
           <div class="flex-1 h-1 bg-gray-300"></div>
@@ -739,15 +739,15 @@ function renderModalOverlay() {
         <h3 class="text-3xl font-bold text-gray-800 mb-6">항공권 추천</h3>
         <div class="grid grid-cols-3 gap-6">
           ${FLIGHT_OPTIONS.map(f => `
-            <div class="border-2 border-gray-200 rounded-2xl p-6 hover:border-purple-500 transition-all cursor-pointer" onclick="selectFlight('${f.id}')">
+            <div class="border-2 border-gray-200 rounded-2xl p-6 hover:border-blue-900 transition-all cursor-pointer" onclick="selectFlight('${f.id}')">
               <div class="text-center mb-4">
-                <span class="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-bold">${f.type}</span>
+                <span class="px-4 py-2 bg-blue-100 text-blue-900 rounded-full text-sm font-bold">${f.type}</span>
               </div>
               <p class="text-2xl font-bold text-center text-gray-800 mb-2">${f.price}</p>
               <p class="text-lg font-semibold text-gray-700 mb-1">${f.airline}</p>
               <p class="text-sm text-gray-600 mb-1">${f.route}</p>
               <p class="text-sm text-gray-600 mb-3">${f.duration}</p>
-              <p class="text-sm text-purple-600 font-semibold">${f.highlight}</p>
+              <p class="text-sm text-blue-900 font-semibold">${f.highlight}</p>
             </div>
           `).join('')}
         </div>
@@ -759,15 +759,15 @@ function renderModalOverlay() {
         <h3 class="text-3xl font-bold text-gray-800 mb-6">숙소 추천</h3>
         <div class="grid grid-cols-3 gap-6">
           ${STAY_OPTIONS.map(s => `
-            <div class="border-2 border-gray-200 rounded-2xl p-6 hover:border-purple-500 transition-all cursor-pointer" onclick="selectStay('${s.id}')">
+            <div class="border-2 border-gray-200 rounded-2xl p-6 hover:border-blue-900 transition-all cursor-pointer" onclick="selectStay('${s.id}')">
               <div class="text-center mb-4">
-                <span class="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-bold">${s.type}</span>
+                <span class="px-4 py-2 bg-blue-100 text-blue-900 rounded-full text-sm font-bold">${s.type}</span>
               </div>
               <p class="text-2xl font-bold text-center text-gray-800 mb-2">${s.price}</p>
               <p class="text-lg font-semibold text-gray-700 mb-1">${s.name}</p>
               <p class="text-sm text-gray-600 mb-1">${s.location}</p>
               <p class="text-sm text-gray-600 mb-3">${s.rooms}</p>
-              <p class="text-sm text-purple-600 font-semibold">${s.highlight}</p>
+              <p class="text-sm text-blue-900 font-semibold">${s.highlight}</p>
             </div>
           `).join('')}
         </div>
@@ -787,7 +787,7 @@ function renderToast() {
   const el = document.createElement('div');
   el.id = 'toast';
   el.className = `fixed top-8 right-8 px-8 py-4 rounded-2xl shadow-2xl text-white font-semibold text-lg z-50 animate-slide-down
-    ${AppState.toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+    ${AppState.toast.type === 'success' ? 'bg-emerald-600' : 'bg-red-500'}`;
   el.textContent = AppState.toast.message;
   document.body.appendChild(el);
 
