@@ -1,0 +1,16 @@
+# Local Development Environment Variables
+# Copy this to .dev.vars and fill in your API keys
+
+# Amadeus Flight API (Free Tier)
+# Sign up at: https://developers.amadeus.com/
+AMADEUS_CLIENT_ID=your_amadeus_client_id
+AMADEUS_CLIENT_SECRET=your_amadeus_client_secret
+
+# Adzuna Job Search API (Free Tier)
+# Sign up at: https://developer.adzuna.com/
+ADZUNA_APP_ID=your_adzuna_app_id
+ADZUNA_APP_KEY=your_adzuna_app_key
+
+# RapidAPI Key (Optional - for Booking.com)
+# Sign up at: https://rapidapi.com/
+RAPIDAPI_KEY=your_rapidapi_key

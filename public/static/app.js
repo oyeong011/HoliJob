@@ -1,6 +1,88 @@
 // HoliJob v4 - Toss-like Simple Design
 // "간편함이 철학"
 
+// ============ API 호출 유틸리티 ============
+async function callAPI(endpoint, data) {
+  try {
+    const response = await fetch(`/api/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('API call failed:', error);
+    return null;
+  }
+}
+
+// 실제 일자리 검색
+async function searchRealJobs(city) {
+  const result = await callAPI('jobs/search', {
+    query: 'hospitality cafe kitchen retail',
+    location: city,
+    country: 'au',
+  });
+
+  if (result && result.success && result.data.length > 0) {
+    return result.data;
+  }
+
+  // API 실패 시 더미 데이터 반환
+  return null;
+}
+
+// 실제 항공권 검색
+async function searchRealFlights(origin, destination, departureDate) {
+  const result = await callAPI('flights/search', {
+    origin: origin || 'ICN', // Incheon
+    destination: getCityIATA(destination),
+    departureDate,
+    adults: 1,
+  });
+
+  if (result && result.success && result.data.length > 0) {
+    return result.data;
+  }
+
+  return null;
+}
+
+// 실제 숙소 검색
+async function searchRealAccommodations(city, checkin) {
+  const result = await callAPI('accommodations/search', {
+    city,
+    checkin,
+    guests: 1,
+  });
+
+  if (result && result.success && result.data.length > 0) {
+    return result.data;
+  }
+
+  return null;
+}
+
+// 도시명을 IATA 코드로 변환
+function getCityIATA(city) {
+  const iataCodes = {
+    'Sydney': 'SYD',
+    'Melbourne': 'MEL',
+    'Brisbane': 'BNE',
+    'Perth': 'PER',
+    'Adelaide': 'ADL',
+  };
+  return iataCodes[city] || 'SYD';
+}
+
 // ============ 상태 관리 ============
 const AppState = {
   currentScreen: 'splash',
@@ -881,52 +963,78 @@ function renderBottomSheet() {
     }, 2000);
 
   } else if (AppState.bottomSheetType === 'flight') {
+    const data = AppState.bottomSheetData || {};
+    const options = data.options || FLIGHT_OPTIONS;
+    const loading = data.loading || false;
+
     content = `
       <div class="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
         <div class="px-6 py-6">
           <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-6"></div>
           <h3 class="text-2xl font-bold text-gray-900 mb-6">항공권을 선택하세요</h3>
           
-          <div class="space-y-3">
-            ${FLIGHT_OPTIONS.map(f => `
-              <button 
-                onclick="selectFlight('${f.id}')" 
-                class="w-full text-left border-2 border-gray-200 rounded-xl p-5 active:bg-gray-50 transition-all">
-                <div class="flex items-start justify-between mb-3">
-                  <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold">${f.type}</span>
-                  <span class="text-xl font-bold text-gray-900">${f.price}</span>
-                </div>
-                <p class="text-base font-bold text-gray-900 mb-1">${f.airline}</p>
-                <p class="text-sm text-gray-600 mb-1">${f.route}</p>
-                <p class="text-sm text-gray-600">${f.duration}</p>
-              </button>
-            `).join('')}
-          </div>
+          ${loading ? `
+            <div class="flex items-center justify-center py-12">
+              <div class="text-center">
+                <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-gray-600">실시간 항공권 검색 중...</p>
+              </div>
+            </div>
+          ` : `
+            <div class="space-y-3">
+              ${options.map(f => `
+                <button 
+                  onclick="selectFlight('${f.id}')" 
+                  class="w-full text-left border-2 border-gray-200 rounded-xl p-5 active:bg-gray-50 transition-all">
+                  <div class="flex items-start justify-between mb-3">
+                    <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold">${f.type}</span>
+                    <span class="text-xl font-bold text-gray-900">${f.price}</span>
+                  </div>
+                  <p class="text-base font-bold text-gray-900 mb-1">${f.airline}</p>
+                  <p class="text-sm text-gray-600 mb-1">${f.route}</p>
+                  <p class="text-sm text-gray-600">${f.duration}</p>
+                </button>
+              `).join('')}
+            </div>
+          `}
         </div>
       </div>
     `;
   } else if (AppState.bottomSheetType === 'stay') {
+    const data = AppState.bottomSheetData || {};
+    const options = data.options || STAY_OPTIONS;
+    const loading = data.loading || false;
+
     content = `
       <div class="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
         <div class="px-6 py-6">
           <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-6"></div>
           <h3 class="text-2xl font-bold text-gray-900 mb-6">숙소를 선택하세요</h3>
           
-          <div class="space-y-3">
-            ${STAY_OPTIONS.map(s => `
-              <button 
-                onclick="selectStay('${s.id}')" 
-                class="w-full text-left border-2 border-gray-200 rounded-xl p-5 active:bg-gray-50 transition-all">
-                <div class="flex items-start justify-between mb-3">
-                  <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold">${s.type}</span>
-                  <span class="text-xl font-bold text-gray-900">${s.price}</span>
-                </div>
-                <p class="text-base font-bold text-gray-900 mb-1">${s.name}</p>
-                <p class="text-sm text-gray-600 mb-1">${s.location}</p>
-                <p class="text-sm text-gray-600">${s.rooms}</p>
-              </button>
-            `).join('')}
-          </div>
+          ${loading ? `
+            <div class="flex items-center justify-center py-12">
+              <div class="text-center">
+                <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-gray-600">실시간 숙소 검색 중...</p>
+              </div>
+            </div>
+          ` : `
+            <div class="space-y-3">
+              ${options.map(s => `
+                <button 
+                  onclick="selectStay('${s.id}')" 
+                  class="w-full text-left border-2 border-gray-200 rounded-xl p-5 active:bg-gray-50 transition-all">
+                  <div class="flex items-start justify-between mb-3">
+                    <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold">${s.type}</span>
+                    <span class="text-xl font-bold text-gray-900">${s.price}</span>
+                  </div>
+                  <p class="text-base font-bold text-gray-900 mb-1">${s.name}</p>
+                  <p class="text-sm text-gray-600 mb-1">${s.location}</p>
+                  <p class="text-sm text-gray-600">${s.rooms}</p>
+                </button>
+              `).join('')}
+            </div>
+          `}
         </div>
       </div>
     `;
@@ -1065,8 +1173,20 @@ function completeOnboarding() {
   AppState.match_status = 'MATCHING';
   render();
 
-  setTimeout(() => {
-    AppState.matches = DUMMY_MATCHES;
+  // 실제 일자리 API 호출
+  setTimeout(async () => {
+    const realJobs = await searchRealJobs(AppState.profile.city);
+    
+    if (realJobs && realJobs.length > 0) {
+      AppState.matches = realJobs;
+    } else {
+      // API 실패 시 더미 데이터 사용
+      AppState.matches = DUMMY_MATCHES.map(job => ({
+        ...job,
+        city: AppState.profile.city
+      }));
+    }
+
     AppState.match_status = 'READY';
     AppState.currentScreen = 'home';
     AppState.currentTab = 'home';
@@ -1079,8 +1199,20 @@ function submitOnboarding() {
   AppState.match_status = 'MATCHING';
   render();
 
-  setTimeout(() => {
-    AppState.matches = DUMMY_MATCHES;
+  // 실제 일자리 API 호출
+  setTimeout(async () => {
+    const realJobs = await searchRealJobs(AppState.profile.city);
+    
+    if (realJobs && realJobs.length > 0) {
+      AppState.matches = realJobs;
+    } else {
+      // API 실패 시 더미 데이터 사용
+      AppState.matches = DUMMY_MATCHES.map(job => ({
+        ...job,
+        city: AppState.profile.city
+      }));
+    }
+
     AppState.match_status = 'READY';
     AppState.currentScreen = 'home';
     AppState.currentTab = 'home';
@@ -1224,9 +1356,21 @@ function startVisaDemo() {
   render();
 }
 
-function startFlightDemo() {
+async function startFlightDemo() {
   AppState.showBottomSheet = true;
   AppState.bottomSheetType = 'flight';
+  AppState.bottomSheetData = { loading: true };
+  render();
+
+  // 실제 항공권 API 호출
+  const departureDate = AppState.profile.depart_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const realFlights = await searchRealFlights('ICN', AppState.profile.city, departureDate);
+
+  if (realFlights && realFlights.length > 0) {
+    AppState.bottomSheetData = { loading: false, options: realFlights };
+  } else {
+    AppState.bottomSheetData = { loading: false, options: FLIGHT_OPTIONS };
+  }
   render();
 }
 
@@ -1237,9 +1381,21 @@ function selectFlight(flightId) {
   showToast('항공권 예약이 완료됐어요');
 }
 
-function startStayDemo() {
+async function startStayDemo() {
   AppState.showBottomSheet = true;
   AppState.bottomSheetType = 'stay';
+  AppState.bottomSheetData = { loading: true };
+  render();
+
+  // 실제 숙소 API 호출
+  const checkin = AppState.profile.depart_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const realStays = await searchRealAccommodations(AppState.profile.city, checkin);
+
+  if (realStays && realStays.length > 0) {
+    AppState.bottomSheetData = { loading: false, options: realStays };
+  } else {
+    AppState.bottomSheetData = { loading: false, options: STAY_OPTIONS };
+  }
   render();
 }
 
