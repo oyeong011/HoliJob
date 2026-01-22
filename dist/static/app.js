@@ -115,17 +115,17 @@ function render() {
 // ============ 스플래시 화면 ============
 function renderSplash() {
   return `
-    <div class="min-h-screen bg-white flex flex-col items-center justify-center px-6">
-      <div class="text-center mb-12">
-        <div class="text-6xl mb-6">✈️</div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-4">도착 전에<br/>일부터 정해드립니다</h1>
-        <p class="text-lg text-gray-600 leading-relaxed">AI가 당신에게 맞는 일자리를 찾아<br/>버튼 하나로 지원까지 완료해요</p>
+    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-700">
+      <div class="text-center px-8 max-w-2xl">
+        <img src="/holijob-logo.png" alt="HoliJob" class="w-64 mx-auto mb-8 opacity-0 animate-fade-in" style="animation-delay: 0.2s; animation-fill-mode: forwards;">
+        <p class="text-2xl text-white/90 mb-4">도착 전에 일부터 정해드립니다</p>
+        <p class="text-lg text-white/80 mb-12">AI가 당신에게 맞는 일자리를 골라드려요<br/>버튼 하나로 지원 완료</p>
+        <button 
+          onclick="startApp()"
+          class="px-12 py-5 bg-white text-blue-900 rounded-2xl font-bold text-xl hover:scale-105 transition-transform shadow-2xl">
+          시작하기
+        </button>
       </div>
-      <button 
-        onclick="startApp()"
-        class="w-full max-w-sm py-4 bg-blue-600 text-white rounded-xl font-bold text-lg active:bg-blue-700 transition-colors">
-        시작하기
-      </button>
     </div>
   `;
 }
@@ -529,7 +529,8 @@ function renderHome() {
   return `
     <div class="bg-white min-h-screen">
       <!-- 헤더 -->
-      <div class="px-6 pt-12 pb-6">
+      <div class="px-6 pt-8 pb-6 border-b border-gray-100">
+        <img src="/holijob-logo.png" alt="HoliJob" class="h-8 mb-6">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">
           ${isApplied ? '지원 완료' : 'AI가 찾은<br/>당신의 일자리'}
         </h1>
@@ -620,7 +621,8 @@ function renderHome() {
 function renderJobs() {
   return `
     <div class="bg-white min-h-screen">
-      <div class="px-6 pt-12 pb-6">
+      <div class="px-6 pt-8 pb-6 border-b border-gray-100">
+        <img src="/holijob-logo.png" alt="HoliJob" class="h-8 mb-6">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">추천 일자리</h1>
         <p class="text-base text-gray-600">AI가 선택한 후보들이에요</p>
       </div>
@@ -668,7 +670,8 @@ function renderJobs() {
 function renderChecklist() {
   return `
     <div class="bg-white min-h-screen">
-      <div class="px-6 pt-12 pb-6">
+      <div class="px-6 pt-8 pb-6 border-b border-gray-100">
+        <img src="/holijob-logo.png" alt="HoliJob" class="h-8 mb-6">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">준비 체크리스트</h1>
         <p class="text-base text-gray-600">하나씩 완료해보세요</p>
       </div>
@@ -716,7 +719,8 @@ function renderChecklist() {
 function renderMyPage() {
   return `
     <div class="bg-white min-h-screen">
-      <div class="px-6 pt-12 pb-6">
+      <div class="px-6 pt-8 pb-6 border-b border-gray-100">
+        <img src="/holijob-logo.png" alt="HoliJob" class="h-8 mb-6">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">전체</h1>
         <p class="text-base text-gray-600">서비스를 관리해보세요</p>
       </div>
