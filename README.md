@@ -13,7 +13,26 @@
 - **샌드박스**: https://3000-ibjb0vfijw83h3yekl9l8-b9b802c4.sandbox.novita.ai
 - **GitHub**: https://github.com/oyeong011/HoliJob
 
-## 최신 업데이트 (로고 적용)
+## 최신 업데이트 (실제 API 연동)
+
+### 🔌 실제 데이터 API 통합
+**무료 API를 사용한 실시간 데이터 제공**
+
+#### 1️⃣ **Amadeus Flight API** (항공권)
+- 실시간 항공권 검색
+- 전 세계 항공사 데이터
+- 무료 티어: 월 2,000 API 호출
+
+#### 2️⃣ **Adzuna Job API** (일자리)
+- 호주 전역 일자리 검색
+- 실시간 채용 공고
+- 무료 무제한 사용
+
+#### 3️⃣ **Fallback 시스템**
+- API 실패 시 자동으로 더미 데이터 사용
+- API 키 없이도 정상 작동
+
+**📖 API 설정 가이드**: [API_SETUP.md](./API_SETUP.md) 참조
 
 ### 🎨 HoliJob 공식 로고 추가
 - **스플래시 화면**: 네이비 그라디언트 배경에 흰색 로고 (중앙 배치, fade-in 애니메이션)
